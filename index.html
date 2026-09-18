@@ -241,31 +241,34 @@
       background: #f0f0f0;
     }
 
-    .qr-box {
+    .formulaire-deuxieme {
       margin-top: 20px;
-      padding: 20px;
-      background: #f8f8f8;
-      border-radius: 12px;
-      text-align: center;
+      padding: 18px;
       border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fafafa;
     }
 
-    .qr-box img {
-      display: block;
-      width: 220px;
-      max-width: 100%;
-      height: auto;
-      margin: 15px auto 0;
-      background: white;
-      padding: 8px;
-      border-radius: 8px;
+    .formulaire-deuxieme h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    .formulaire-deuxieme .petit-texte {
+      margin-top: 6px;
+    }
+
+    .formulaire-deuxieme #readerDeuxieme {
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    .qr-box {
+      display: none;
     }
 
     .token {
-      font-size: 22px;
-      font-weight: bold;
-      letter-spacing: 3px;
-      margin-top: 8px;
+      display: none;
     }
 
     .petit-texte {
@@ -390,7 +393,7 @@
 
 
   <!-- ==================================================
-       ÉLÈVE CONNU
+       ÉLÈVE CONNU - PREMIER ÉLÈVE UNIQUEMENT
   ================================================== -->
 
   <div
@@ -398,7 +401,7 @@
     class="section cache"
   >
 
-    <h2 id="titreEleveConnu">
+    <h2>
       Élève déjà connu
     </h2>
 
@@ -422,7 +425,7 @@
     <button
       type="button"
       class="enregistrer"
-      onclick="rechercherEleve()"
+      onclick="rechercherPremierEleve()"
     >
       🔎 Rechercher l'élève
     </button>
@@ -493,10 +496,6 @@
     </h2>
 
 
-    <!-- ==================================================
-         LISTE DES ÉLÈVES
-    ================================================== -->
-
     <div id="listeEleves"></div>
 
 
@@ -515,7 +514,7 @@
 
 
     <!-- ==================================================
-         CHOIX DU 2e ÉLÈVE
+         CHOIX 2e ÉLÈVE
     ================================================== -->
 
     <div
@@ -546,6 +545,48 @@
         </button>
 
       </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         FORMULAIRE QR DU 2e ÉLÈVE
+         IMPORTANT : placé dans sectionSelection
+    ================================================== -->
+
+    <div
+      id="formulaireDeuxiemeConnu"
+      class="formulaire-deuxieme cache"
+    >
+
+      <h3>
+        Identifier le 2e élève
+      </h3>
+
+      <label for="tokenDeuxieme">
+        QR Token
+      </label>
+
+      <input
+        type="text"
+        id="tokenDeuxieme"
+        placeholder="Scanner ou saisir le QR Token"
+        autocomplete="off"
+      >
+
+      <div class="petit-texte">
+        Scannez le QR code ou saisissez les 3 lettres du token.
+      </div>
+
+      <div id="readerDeuxieme"></div>
+
+      <button
+        type="button"
+        class="enregistrer"
+        onclick="rechercherDeuxiemeEleve()"
+      >
+        🔎 Rechercher le 2e élève
+      </button>
 
     </div>
 
@@ -674,11 +715,17 @@
 
   let modePaiement = "";
 
-  let scanner = null;
+  let scannerPremier = null;
 
-  let scannerActif = false;
+  let scannerDeuxieme = null;
 
-  let traitementScan = false;
+  let scannerPremierActif = false;
+
+  let scannerDeuxiemeActif = false;
+
+  let traitementScanPremier = false;
+
+  let traitementScanDeuxieme = false;
 
 
   /* ==================================================
@@ -714,7 +761,7 @@
 
 
   /* ==================================================
-     CHOIX ÉLÈVE CONNU
+     CHOIX PREMIER ÉLÈVE CONNU
   ================================================== */
 
   function choisirEleveConnu() {
@@ -736,23 +783,20 @@
       .classList.remove("cache");
 
     document
-      .getElementById("titreEleveConnu")
-      .textContent =
-        eleves.length === 0
-          ? "Élève déjà connu"
-          : "Ajouter le 2e élève";
+      .getElementById("token")
+      .value = "";
 
     document
       .getElementById("token")
       .focus();
 
-    demarrerScanner();
+    demarrerScannerPremier();
 
   }
 
 
   /* ==================================================
-     CHOIX NOUVEL ÉLÈVE
+     CHOIX PREMIER NOUVEL ÉLÈVE
   ================================================== */
 
   function choisirNouvelEleve() {
@@ -776,9 +820,15 @@
     document
       .getElementById("titreNouvelEleve")
       .textContent =
-        eleves.length === 0
-          ? "Nouveau élève"
-          : "Ajouter le 2e élève";
+        "Nouveau élève";
+
+    document
+      .getElementById("nouveauPrenom")
+      .value = "";
+
+    document
+      .getElementById("nouveauNom")
+      .value = "";
 
     document
       .getElementById("nouveauPrenom")
@@ -788,10 +838,10 @@
 
 
   /* ==================================================
-     RECHERCHE D'UN ÉLÈVE
+     RECHERCHE PREMIER ÉLÈVE
   ================================================== */
 
-  function rechercherEleve() {
+  function rechercherPremierEleve() {
 
     const champ =
       document.getElementById("token");
@@ -824,6 +874,68 @@
     }
 
 
+    rechercherEleveParToken(
+      token,
+      false
+    );
+
+  }
+
+
+  /* ==================================================
+     RECHERCHE 2e ÉLÈVE
+  ================================================== */
+
+  function rechercherDeuxiemeEleve() {
+
+    const champ =
+      document.getElementById("tokenDeuxieme");
+
+    const token =
+      champ.value
+        .trim()
+        .toLowerCase();
+
+
+    if (!token) {
+
+      afficherMessage(
+        "Veuillez scanner ou saisir le QR Token du 2e élève.",
+        false
+      );
+
+      return;
+    }
+
+
+    if (!/^[a-z]{3}$/.test(token)) {
+
+      afficherMessage(
+        "Le QR Token doit contenir exactement 3 lettres minuscules.",
+        false
+      );
+
+      return;
+    }
+
+
+    rechercherEleveParToken(
+      token,
+      true
+    );
+
+  }
+
+
+  /* ==================================================
+     RECHERCHE COMMUNE PAR TOKEN
+  ================================================== */
+
+  function rechercherEleveParToken(
+    token,
+    deuxieme
+  ) {
+
     fetch(
       API_URL +
       "?action=eleve&token=" +
@@ -845,10 +957,24 @@
         }
 
 
-        ajouterEleveDansSelection(resultat);
+        ajouterEleveDansSelection(
+          resultat
+        );
 
 
-        champ.value = "";
+        if (deuxieme) {
+
+          document
+            .getElementById("tokenDeuxieme")
+            .value = "";
+
+        } else {
+
+          document
+            .getElementById("token")
+            .value = "";
+
+        }
 
 
         afficherMessage(
@@ -874,12 +1000,12 @@
 
 
   /* ==================================================
-     SCAN QR
+     SCAN PREMIER ÉLÈVE
   ================================================== */
 
-  function onScanSuccess(decodedText) {
+  function onScanSuccessPremier(decodedText) {
 
-    if (traitementScan) {
+    if (traitementScanPremier) {
       return;
     }
 
@@ -901,7 +1027,7 @@
     }
 
 
-    traitementScan = true;
+    traitementScanPremier = true;
 
 
     document
@@ -909,12 +1035,12 @@
       .value = token;
 
 
-    rechercherEleve();
+    rechercherPremierEleve();
 
 
     setTimeout(
       function() {
-        traitementScan = false;
+        traitementScanPremier = false;
       },
       2500
     );
@@ -923,14 +1049,61 @@
 
 
   /* ==================================================
-     DÉMARRER LE SCANNER
+     SCAN 2e ÉLÈVE
   ================================================== */
 
-  function demarrerScanner() {
+  function onScanSuccessDeuxieme(decodedText) {
 
-    if (scannerActif) {
+    if (traitementScanDeuxieme) {
       return;
     }
+
+
+    const token =
+      String(decodedText || "")
+        .trim()
+        .toLowerCase();
+
+
+    if (!/^[a-z]{3}$/.test(token)) {
+
+      afficherMessage(
+        "QR code invalide : le token doit contenir 3 lettres.",
+        false
+      );
+
+      return;
+    }
+
+
+    traitementScanDeuxieme = true;
+
+
+    document
+      .getElementById("tokenDeuxieme")
+      .value = token;
+
+
+    rechercherDeuxiemeEleve();
+
+
+    setTimeout(
+      function() {
+        traitementScanDeuxieme = false;
+      },
+      2500
+    );
+
+  }
+
+
+  /* ==================================================
+     DÉMARRER SCANNER PREMIER
+  ================================================== */
+
+  function demarrerScannerPremier() {
+
+    arreterScannerPremier();
 
 
     const lecteur =
@@ -945,11 +1118,11 @@
     lecteur.innerHTML = "";
 
 
-    scanner =
+    scannerPremier =
       new Html5Qrcode("reader");
 
 
-    scanner.start(
+    scannerPremier.start(
 
       {
         facingMode: "environment"
@@ -965,14 +1138,14 @@
 
       },
 
-      onScanSuccess
+      onScanSuccessPremier
 
     )
 
       .then(
         function() {
 
-          scannerActif = true;
+          scannerPremierActif = true;
 
         }
       )
@@ -980,7 +1153,7 @@
       .catch(
         function(erreur) {
 
-          scannerActif = false;
+          scannerPremierActif = false;
 
           console.error(
             "Impossible d'activer la caméra :",
@@ -1000,34 +1173,113 @@
 
 
   /* ==================================================
-     ARRÊTER LE SCANNER
+     DÉMARRER SCANNER 2e
   ================================================== */
 
-  function arreterScanner() {
+  function demarrerScannerDeuxieme() {
 
-    if (!scanner) {
+    arreterScannerDeuxieme();
+
+
+    const lecteur =
+      document.getElementById(
+        "readerDeuxieme"
+      );
+
+
+    if (!lecteur) {
       return;
     }
 
 
-    if (!scannerActif) {
-
-      scanner = null;
-
-      return;
-    }
+    lecteur.innerHTML = "";
 
 
-    scanner.stop()
+    scannerDeuxieme =
+      new Html5Qrcode(
+        "readerDeuxieme"
+      );
+
+
+    scannerDeuxieme.start(
+
+      {
+        facingMode: "environment"
+      },
+
+      {
+        fps: 10,
+
+        qrbox: {
+          width: 250,
+          height: 250
+        }
+
+      },
+
+      onScanSuccessDeuxieme
+
+    )
 
       .then(
         function() {
 
-          scanner.clear();
+          scannerDeuxiemeActif = true;
 
-          scanner = null;
+        }
+      )
 
-          scannerActif = false;
+      .catch(
+        function(erreur) {
+
+          scannerDeuxiemeActif = false;
+
+          console.error(
+            "Impossible d'activer la caméra :",
+            erreur
+          );
+
+
+          afficherMessage(
+            "Le scanner QR ne peut pas accéder à la caméra. Vérifiez l'autorisation de caméra.",
+            false
+          );
+
+        }
+      );
+
+  }
+
+
+  /* ==================================================
+     ARRÊTER SCANNER PREMIER
+  ================================================== */
+
+  function arreterScannerPremier() {
+
+    if (!scannerPremier) {
+      return;
+    }
+
+
+    if (!scannerPremierActif) {
+
+      scannerPremier = null;
+
+      return;
+    }
+
+
+    scannerPremier.stop()
+
+      .then(
+        function() {
+
+          scannerPremier.clear();
+
+          scannerPremier = null;
+
+          scannerPremierActif = false;
 
         }
       )
@@ -1040,9 +1292,9 @@
             erreur
           );
 
-          scannerActif = false;
+          scannerPremierActif = false;
 
-          scanner = null;
+          scannerPremier = null;
 
         }
       );
@@ -1051,7 +1303,71 @@
 
 
   /* ==================================================
-     AJOUT D'UN ÉLÈVE CONNU
+     ARRÊTER SCANNER 2e
+  ================================================== */
+
+  function arreterScannerDeuxieme() {
+
+    if (!scannerDeuxieme) {
+      return;
+    }
+
+
+    if (!scannerDeuxiemeActif) {
+
+      scannerDeuxieme = null;
+
+      return;
+    }
+
+
+    scannerDeuxieme.stop()
+
+      .then(
+        function() {
+
+          scannerDeuxieme.clear();
+
+          scannerDeuxieme = null;
+
+          scannerDeuxiemeActif = false;
+
+        }
+      )
+
+      .catch(
+        function(erreur) {
+
+          console.error(
+            "Erreur lors de l'arrêt du scanner :",
+            erreur
+          );
+
+          scannerDeuxiemeActif = false;
+
+          scannerDeuxieme = null;
+
+        }
+      );
+
+  }
+
+
+  /* ==================================================
+     ARRÊTER TOUS LES SCANNERS
+  ================================================== */
+
+  function arreterTousLesScanners() {
+
+    arreterScannerPremier();
+
+    arreterScannerDeuxieme();
+
+  }
+
+
+  /* ==================================================
+     AJOUT D'UN ÉLÈVE DANS LA SÉLECTION
   ================================================== */
 
   function ajouterEleveDansSelection(eleve) {
@@ -1110,21 +1426,34 @@
     });
 
 
-    arreterScanner();
+    arreterTousLesScanners();
 
 
     document
-      .getElementById("sectionEleveConnu")
+      .getElementById(
+        "sectionEleveConnu"
+      )
       .classList.add("cache");
 
 
     document
-      .getElementById("sectionNouvelEleve")
+      .getElementById(
+        "formulaireDeuxiemeConnu"
+      )
       .classList.add("cache");
 
 
     document
-      .getElementById("sectionSelection")
+      .getElementById(
+        "sectionNouvelEleve"
+      )
+      .classList.add("cache");
+
+
+    document
+      .getElementById(
+        "sectionSelection"
+      )
       .classList.remove("cache");
 
 
@@ -1264,8 +1593,12 @@
 
 
         /*
-         * L'élève est affiché avec son QR
-         * directement dans sa carte.
+         * Aucun QR code n'est affiché
+         * dans l'application.
+         *
+         * Le QR code est maintenant généré
+         * directement dans Google Sheets,
+         * colonne F de l'onglet Eleves.
          */
         afficherSelection();
 
@@ -1306,139 +1639,12 @@
 
 
   /* ==================================================
-     AFFICHER LE QR DU NOUVEL ÉLÈVE
-  ================================================== */
-
-  function ajouterQrDansCarte(bloc, eleve) {
-
-    const qrBox =
-      document.createElement("div");
-
-    qrBox.className =
-      "qr-box";
-
-
-    const titre =
-      document.createElement("h3");
-
-    titre.textContent =
-      "QR code du nouvel élève";
-
-    qrBox.appendChild(titre);
-
-
-    const prenom =
-      document.createElement("div");
-
-    prenom.className =
-      "petit-texte";
-
-    prenom.textContent =
-      "Prénom : " +
-      (eleve.prenom || "");
-
-    qrBox.appendChild(prenom);
-
-
-    const token =
-      document.createElement("div");
-
-    token.className =
-      "token";
-
-    token.textContent =
-      eleve.token;
-
-    qrBox.appendChild(token);
-
-
-    const image =
-      document.createElement("img");
-
-    image.alt =
-      "QR Code personnel";
-
-
-    const tokenEncode =
-      encodeURIComponent(
-        String(eleve.token || "").trim()
-      );
-
-
-    /*
-     * Le QR contient uniquement le token.
-     */
-    image.src =
-      "https://quickchart.io/qr?text=" +
-      tokenEncode +
-      "&size=300";
-
-
-    image.onerror =
-      function() {
-
-        image.style.display =
-          "none";
-
-
-        const erreur =
-          document.createElement("div");
-
-        erreur.className =
-          "message erreur";
-
-        erreur.style.display =
-          "block";
-
-        erreur.textContent =
-          "Le QR code n'a pas pu être chargé. Le QR Token est : " +
-          eleve.token;
-
-        qrBox.appendChild(erreur);
-
-      };
-
-
-    qrBox.appendChild(image);
-
-
-    const texte =
-      document.createElement("div");
-
-    texte.className =
-      "petit-texte";
-
-    texte.textContent =
-      "Ce QR code contient uniquement le QR Token.";
-
-    qrBox.appendChild(texte);
-
-
-    bloc.appendChild(qrBox);
-
-  }
-
-
-  /* ==================================================
-     AFFICHER LE CHOIX POUR LE 2e ÉLÈVE
+     AFFICHER CHOIX 2e ÉLÈVE
   ================================================== */
 
   function afficherChoixDeuxiemeEleve() {
 
     if (eleves.length >= 2) {
-
-      document
-        .getElementById(
-          "sectionChoixDeuxieme"
-        )
-        .classList.add("cache");
-
-      document
-        .getElementById(
-          "boutonAjouterEleve"
-        )
-        .classList.add("cache");
-
       return;
     }
 
@@ -1457,10 +1663,6 @@
       .classList.add("cache");
 
 
-    /*
-     * On fait défiler jusqu'au choix,
-     * sans déplacer la section.
-     */
     document
       .getElementById(
         "sectionChoixDeuxieme"
@@ -1484,14 +1686,6 @@
     }
 
 
-    /*
-     * IMPORTANT :
-     * On NE cache PAS sectionSelection.
-     *
-     * Le premier élève reste donc visible
-     * pendant qu'on identifie le deuxième.
-     */
-
     document
       .getElementById(
         "sectionChoixDeuxieme"
@@ -1501,41 +1695,36 @@
 
     document
       .getElementById(
-        "sectionEleveConnu"
+        "formulaireDeuxiemeConnu"
       )
       .classList.remove("cache");
 
 
     document
       .getElementById(
-        "sectionNouvelEleve"
-      )
-      .classList.add("cache");
-
-
-    document
-      .getElementById(
-        "titreEleveConnu"
-      )
-      .textContent =
-        "Ajouter le 2e élève";
-
-
-    document
-      .getElementById(
-        "token"
+        "tokenDeuxieme"
       )
       .value = "";
 
 
     document
       .getElementById(
-        "token"
+        "tokenDeuxieme"
       )
       .focus();
 
 
-    demarrerScanner();
+    demarrerScannerDeuxieme();
+
+
+    document
+      .getElementById(
+        "formulaireDeuxiemeConnu"
+      )
+      .scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
 
   }
 
@@ -1551,13 +1740,6 @@
     }
 
 
-    /*
-     * IMPORTANT :
-     * On NE cache PAS sectionSelection.
-     *
-     * Le premier élève reste visible.
-     */
-
     document
       .getElementById(
         "sectionChoixDeuxieme"
@@ -1567,7 +1749,7 @@
 
     document
       .getElementById(
-        "sectionEleveConnu"
+        "formulaireDeuxiemeConnu"
       )
       .classList.add("cache");
 
@@ -1606,6 +1788,16 @@
         "nouveauPrenom"
       )
       .focus();
+
+
+    document
+      .getElementById(
+        "sectionNouvelEleve"
+      )
+      .scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
 
   }
 
@@ -1667,21 +1859,6 @@
         bloc.appendChild(
           info
         );
-
-
-        /*
-         * Si c'est un nouvel élève,
-         * son QR apparaît directement
-         * dans sa propre carte.
-         */
-        if (eleve.nouvelEleve) {
-
-          ajouterQrDansCarte(
-            bloc,
-            eleve
-          );
-
-        }
 
 
         const sousTitre =
@@ -1891,14 +2068,6 @@
     );
 
 
-    /*
-     * Avec 1 élève :
-     * le bouton "+ Ajouter un 2e élève"
-     * est visible.
-     *
-     * Avec 2 élèves :
-     * le bouton et le choix sont cachés.
-     */
     const boutonAjouter =
       document.getElementById(
         "boutonAjouterEleve"
@@ -1988,14 +2157,14 @@
 
 
   /* ==================================================
-     TOKEN MANUEL
+     TOKEN PREMIER ÉLÈVE
   ================================================== */
 
   document
     .getElementById("token")
     .addEventListener(
       "change",
-      rechercherEleve
+      rechercherPremierEleve
     );
 
 
@@ -2009,7 +2178,37 @@
 
           event.preventDefault();
 
-          rechercherEleve();
+          rechercherPremierEleve();
+
+        }
+
+      }
+    );
+
+
+  /* ==================================================
+     TOKEN 2e ÉLÈVE
+  ================================================== */
+
+  document
+    .getElementById("tokenDeuxieme")
+    .addEventListener(
+      "change",
+      rechercherDeuxiemeEleve
+    );
+
+
+  document
+    .getElementById("tokenDeuxieme")
+    .addEventListener(
+      "keydown",
+      function(event) {
+
+        if (event.key === "Enter") {
+
+          event.preventDefault();
+
+          rechercherDeuxiemeEleve();
 
         }
 
@@ -2286,7 +2485,7 @@
           );
 
 
-          arreterScanner();
+          arreterTousLesScanners();
 
           reinitialiserApplication();
 
@@ -2317,7 +2516,7 @@
 
   function reinitialiserApplication() {
 
-    arreterScanner();
+    arreterTousLesScanners();
 
 
     eleves = [];
@@ -2327,6 +2526,11 @@
 
     document
       .getElementById("token")
+      .value = "";
+
+
+    document
+      .getElementById("tokenDeuxieme")
       .value = "";
 
 
@@ -2367,6 +2571,13 @@
     document
       .getElementById(
         "sectionChoixDeuxieme"
+      )
+      .classList.add("cache");
+
+
+    document
+      .getElementById(
+        "formulaireDeuxiemeConnu"
       )
       .classList.add("cache");
 
