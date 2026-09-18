@@ -29,7 +29,7 @@
     }
 
     .container {
-      max-width: 600px;
+      max-width: 650px;
       margin: 0 auto;
       background: white;
       padding: 25px;
@@ -42,6 +42,11 @@
       margin-top: 0;
       margin-bottom: 8px;
       font-size: 28px;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 21px;
     }
 
     .sous-titre {
@@ -73,11 +78,94 @@
       border-color: #777;
     }
 
-    #reader {
-      width: 100%;
-      margin-top: 10px;
+    button {
+      font-family: inherit;
+    }
+
+    .choix-initial {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .choix-initial button {
+      flex: 1;
+      padding: 16px 10px;
+      border: 1px solid #ccc;
       border-radius: 10px;
-      overflow: hidden;
+      background: white;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .choix-initial button:hover {
+      background: #f0f0f0;
+    }
+
+    .section {
+      margin-top: 25px;
+    }
+
+    .eleve {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f0f0f0;
+      border-radius: 10px;
+    }
+
+    .eleve strong {
+      font-size: 18px;
+    }
+
+    .eleve-info {
+      margin-top: 5px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .eleve-card {
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+
+    .eleve-card h3 {
+      margin-top: 0;
+      margin-bottom: 5px;
+    }
+
+    .cours-liste {
+      margin-top: 12px;
+    }
+
+    .cours-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .cours-option input {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .cours-option span {
+      flex: 1;
+    }
+
+    .cours-horaire {
+      color: #777;
+      font-size: 13px;
     }
 
     .boutons-paiement {
@@ -102,16 +190,23 @@
       border-color: #222;
     }
 
-    .eleve {
+    .total-box {
       margin-top: 20px;
-      padding: 15px;
+      padding: 18px;
       background: #f0f0f0;
       border-radius: 10px;
-      display: none;
+      text-align: center;
     }
 
-    .eleve strong {
-      font-size: 18px;
+    .total-label {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .total {
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 5px;
     }
 
     button.enregistrer {
@@ -130,6 +225,57 @@
     button.enregistrer:disabled {
       background: #aaa;
       cursor: not-allowed;
+    }
+
+    .bouton-second-eleve {
+      width: 100%;
+      margin-top: 15px;
+      padding: 13px;
+      border: 1px dashed #aaa;
+      border-radius: 9px;
+      background: white;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .bouton-supprimer {
+      margin-top: 12px;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .qr-box {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f8f8;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .qr-box img {
+      width: 220px;
+      max-width: 100%;
+      height: auto;
+      margin-top: 12px;
+      background: white;
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    .token {
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      margin-top: 8px;
+    }
+
+    .petit-texte {
+      font-size: 13px;
+      color: #777;
+      margin-top: 6px;
     }
 
     .message {
@@ -156,10 +302,31 @@
       border-top: 1px solid #ddd;
     }
 
-    .petit-texte {
-      font-size: 13px;
-      color: #777;
-      margin-top: 6px;
+    .cache {
+      display: none;
+    }
+
+    .resume {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 10px;
+    }
+
+    .resume-ligne {
+      padding: 4px 0;
+    }
+
+    @media (max-width: 500px) {
+
+      .choix-initial {
+        flex-direction: column;
+      }
+
+      .container {
+        padding: 18px;
+      }
+
     }
 
   </style>
@@ -169,18 +336,60 @@
 
 <body>
 
-  <div class="container">
+<div class="container">
 
-    <h1>
-      Pointage des cours à l'unité
-    </h1>
+  <h1>
+    Pointage des cours à l'unité
+  </h1>
 
-    <div class="sous-titre">
-      Enregistrement des présences
+  <div class="sous-titre">
+    Inscription et enregistrement des présences
+  </div>
+
+
+  <!-- ********************************************
+       ÉTAPE 1
+       ******************************************** -->
+
+  <div id="etapeChoix">
+
+    <h2>
+      L'élève est-il déjà enregistré ?
+    </h2>
+
+    <div class="choix-initial">
+
+      <button
+        type="button"
+        onclick="choisirEleveConnu()"
+      >
+        Élève déjà connu
+      </button>
+
+      <button
+        type="button"
+        onclick="choisirNouvelEleve()"
+      >
+        Nouvel élève
+      </button>
+
     </div>
 
+  </div>
 
-    <!-- QR TOKEN -->
+
+  <!-- ********************************************
+       ÉTAPE ÉLÈVE CONNU
+       ******************************************** -->
+
+  <div
+    id="sectionEleveConnu"
+    class="section cache"
+  >
+
+    <h2>
+      Élève déjà connu
+    </h2>
 
     <label for="token">
       QR Token
@@ -197,44 +406,96 @@
       Vous pouvez scanner le QR code ou saisir le token manuellement.
     </div>
 
-
-    <!-- SCANNER -->
-
     <div id="reader"></div>
 
+    <button
+      type="button"
+      class="bouton-second-eleve"
+      onclick="ajouterDeuxiemeEleve()"
+    >
+      + Ajouter un 2e élève
+    </button>
 
-    <!-- ELEVE -->
+  </div>
 
-    <div
-      id="eleve"
-      class="eleve"
+
+  <!-- ********************************************
+       NOUVEL ÉLÈVE
+       ******************************************** -->
+
+  <div
+    id="sectionNouvelEleve"
+    class="section cache"
+  >
+
+    <h2>
+      Nouveau élève
+    </h2>
+
+    <label for="nouveauPrenom">
+      Prénom
+    </label>
+
+    <input
+      type="text"
+      id="nouveauPrenom"
+      placeholder="Prénom"
+      autocomplete="given-name"
     >
 
-      Élève identifié :
+    <label for="nouveauNom">
+      Nom
+    </label>
 
-      <br>
+    <input
+      type="text"
+      id="nouveauNom"
+      placeholder="Nom"
+      autocomplete="family-name"
+    >
 
-      <strong id="nomEleve"></strong>
+    <button
+      type="button"
+      class="enregistrer"
+      id="boutonCreerEleve"
+      onclick="creerEleve()"
+    >
+      CRÉER L'ÉLÈVE
+    </button>
 
-    </div>
+    <div
+      id="nouvelEleveResultat"
+      class="cache"
+    ></div>
 
+  </div>
+
+
+  <!-- ********************************************
+       ÉLÈVES SÉLECTIONNÉS
+       ******************************************** -->
+
+  <div
+    id="sectionSelection"
+    class="section cache"
+  >
 
     <hr class="separateur">
 
+    <h2>
+      Cours consommés
+    </h2>
 
-    <!-- COURS -->
+    <div id="listeEleves"></div>
 
-    <label for="cours">
-      Cours
-    </label>
-
-    <select id="cours">
-
-      <option value="">
-        Sélectionner un cours
-      </option>
-
-    </select>
+    <button
+      type="button"
+      id="boutonAjouterEleve"
+      class="bouton-second-eleve"
+      onclick="ajouterDeuxiemeEleve()"
+    >
+      + Ajouter un 2e élève
+    </button>
 
 
     <!-- MODE DE PAIEMENT -->
@@ -267,7 +528,7 @@
     <!-- TARIF -->
 
     <label for="tarif">
-      Tarif appliqué
+      Tarif unitaire
     </label>
 
     <input
@@ -279,35 +540,64 @@
     >
 
     <div class="petit-texte">
-      Saisissez le montant réellement payé.
+      Ce tarif sera appliqué à chaque cours consommé.
     </div>
 
 
-    <!-- BOUTON -->
+    <!-- TOTAL -->
+
+    <div class="total-box">
+
+      <div class="total-label">
+        Total à payer
+      </div>
+
+      <div
+        id="total"
+        class="total"
+      >
+        0,00 €
+      </div>
+
+      <div
+        id="nombreCoursTotal"
+        class="petit-texte"
+      >
+        0 cours
+      </div>
+
+    </div>
+
+
+    <!-- ENREGISTRER -->
 
     <button
       id="boutonEnregistrer"
       class="enregistrer"
       disabled
     >
-      ENREGISTRER LA PRÉSENCE
+      ENREGISTRER LE POINTAGE
     </button>
 
-
-    <!-- MESSAGE -->
-
-    <div
-      id="message"
-      class="message"
-    ></div>
-
   </div>
+
+
+  <!-- ********************************************
+       MESSAGE
+       ******************************************** -->
+
+  <div
+    id="message"
+    class="message"
+  ></div>
+
+</div>
 
 
 <script>
 
   /*************************************************
-   * URL DE L'APPLICATION GOOGLE APPS SCRIPT
+   * URL GOOGLE APPS SCRIPT
    *************************************************/
 
   const API_URL =
@@ -318,13 +608,17 @@
    * VARIABLES
    *************************************************/
 
-  let eleve = null;
+  let coursDisponibles = [];
+
+  let eleves = [];
 
   let modePaiement = "";
 
-  let traitement = false;
-
   let scanner = null;
+
+  let traitementScan = false;
+
+  let typeInitial = "";
 
 
   /*************************************************
@@ -334,27 +628,15 @@
   function chargerCours() {
 
     fetch(API_URL + "?action=cours")
+
       .then(response => response.json())
+
       .then(cours => {
 
-        const select =
-          document.getElementById("cours");
-
-        cours.forEach(c => {
-
-          const option =
-            document.createElement("option");
-
-          option.value = c.id;
-
-          option.textContent =
-            c.nom + " — " + c.horaire;
-
-          select.appendChild(option);
-
-        });
+        coursDisponibles = cours || [];
 
       })
+
       .catch(erreur => {
 
         afficherMessage(
@@ -370,17 +652,69 @@
 
 
   /*************************************************
-   * RECHERCHE ELEVE
+   * CHOIX ÉLÈVE CONNU
+   *************************************************/
+
+  function choisirEleveConnu() {
+
+    typeInitial = "connu";
+
+    document
+      .getElementById("etapeChoix")
+      .classList.add("cache");
+
+    document
+      .getElementById("sectionEleveConnu")
+      .classList.remove("cache");
+
+    document
+      .getElementById("token")
+      .focus();
+
+  }
+
+
+  /*************************************************
+   * CHOIX NOUVEL ÉLÈVE
+   *************************************************/
+
+  function choisirNouvelEleve() {
+
+    typeInitial = "nouveau";
+
+    document
+      .getElementById("etapeChoix")
+      .classList.add("cache");
+
+    document
+      .getElementById("sectionNouvelEleve")
+      .classList.remove("cache");
+
+    document
+      .getElementById("nouveauPrenom")
+      .focus();
+
+  }
+
+
+  /*************************************************
+   * RECHERCHE D'UN ÉLÈVE CONNU
    *************************************************/
 
   function rechercherEleve() {
 
     const token =
-      document.getElementById("token").value.trim();
+      document
+        .getElementById("token")
+        .value
+        .trim()
+        .toLowerCase();
+
 
     if (!token) {
       return;
     }
+
 
     fetch(
       API_URL +
@@ -394,39 +728,30 @@
 
         if (!resultat.ok) {
 
-          eleve = null;
-
-          document
-            .getElementById("eleve")
-            .style.display = "none";
-
           afficherMessage(
             resultat.message,
             false
           );
 
-          mettreAJourBouton();
-
           return;
         }
 
-        eleve = resultat;
 
-        document
-          .getElementById("nomEleve")
-          .textContent =
-          resultat.nomComplet;
-
-        document
-          .getElementById("eleve")
-          .style.display = "block";
-
-        afficherMessage(
-          "Élève identifié.",
-          true
+        ajouterEleveDansSelection(
+          resultat
         );
 
-        mettreAJourBouton();
+
+        document
+          .getElementById("token")
+          .value = "";
+
+
+        afficherMessage(
+          resultat.nomComplet +
+          " a été identifié.",
+          true
+        );
 
       })
 
@@ -445,40 +770,46 @@
 
 
   /*************************************************
-   * SCAN QR
+   * SCANNER QR
    *************************************************/
 
   function onScanSuccess(decodedText) {
 
-    if (traitement) {
+    if (traitementScan) {
       return;
     }
 
-    traitement = true;
+    traitementScan = true;
+
 
     document
       .getElementById("token")
-      .value = decodedText;
+      .value =
+        decodedText.trim().toLowerCase();
+
 
     rechercherEleve();
 
-    setTimeout(() => {
 
-      traitement = false;
-
-    }, 3000);
+    setTimeout(
+      function() {
+        traitementScan = false;
+      },
+      2500
+    );
 
   }
 
 
   /*************************************************
-   * INITIALISATION SCANNER
+   * INITIALISATION DU SCANNER
    *************************************************/
 
   function initialiserScanner() {
 
     scanner =
       new Html5Qrcode("reader");
+
 
     scanner.start(
 
@@ -488,10 +819,12 @@
 
       {
         fps: 10,
+
         qrbox: {
           width: 250,
           height: 250
         }
+
       },
 
       onScanSuccess
@@ -511,44 +844,634 @@
 
 
   /*************************************************
-   * MODE DE PAIEMENT
+   * AJOUT D'UN ÉLÈVE DANS LA SÉLECTION
    *************************************************/
 
-  document
-    .querySelectorAll(".bouton-paiement")
-    .forEach(bouton => {
+  function ajouterEleveDansSelection(eleve) {
 
-      bouton.addEventListener(
-        "click",
-        function() {
+    if (eleves.length >= 2) {
 
-          document
-            .querySelectorAll(".bouton-paiement")
-            .forEach(b => {
+      afficherMessage(
+        "Vous avez déjà sélectionné 2 élèves.",
+        false
+      );
 
-              b.classList.remove(
-                "selectionne"
-              );
+      return;
+    }
 
-            });
 
-          this.classList.add(
-            "selectionne"
-          );
-
-          modePaiement =
-            this.dataset.mode;
-
-          mettreAJourBouton();
-
+    const dejaPresent =
+      eleves.some(
+        function(e) {
+          return e.idEleve === eleve.idEleve;
         }
       );
+
+
+    if (dejaPresent) {
+
+      afficherMessage(
+        "Cet élève est déjà sélectionné.",
+        false
+      );
+
+      return;
+    }
+
+
+    eleves.push({
+
+      idEleve: eleve.idEleve,
+
+      nomComplet: eleve.nomComplet,
+
+      nom: eleve.nom,
+
+      prenom: eleve.prenom,
+
+      token: eleve.token,
+
+      cours: []
 
     });
 
 
+    afficherSelection();
+
+
+    document
+      .getElementById("sectionSelection")
+      .classList.remove("cache");
+
+
+    document
+      .getElementById("sectionEleveConnu")
+      .classList.remove("cache");
+
+
+    mettreAJourTotal();
+
+  }
+
+
   /*************************************************
-   * TOKEN SAISI MANUELLEMENT
+   * CRÉATION D'UN NOUVEL ÉLÈVE
+   *************************************************/
+
+  function creerEleve() {
+
+    const prenom =
+      document
+        .getElementById("nouveauPrenom")
+        .value
+        .trim();
+
+    const nom =
+      document
+        .getElementById("nouveauNom")
+        .value
+        .trim();
+
+
+    if (!prenom || !nom) {
+
+      afficherMessage(
+        "Veuillez encoder le prénom et le nom.",
+        false
+      );
+
+      return;
+    }
+
+
+    const bouton =
+      document
+        .getElementById("boutonCreerEleve");
+
+
+    bouton.disabled = true;
+
+    bouton.textContent =
+      "CRÉATION EN COURS...";
+
+
+    fetch(API_URL, {
+
+      method: "POST",
+
+      body: JSON.stringify({
+
+        action: "creerEleve",
+
+        nom: nom,
+
+        prenom: prenom
+
+      })
+
+    })
+
+      .then(response => response.json())
+
+      .then(resultat => {
+
+        if (!resultat.ok) {
+
+          throw new Error(
+            resultat.message
+          );
+        }
+
+
+        const nouvelEleve = {
+
+          idEleve:
+            resultat.idEleve,
+
+          nom:
+            resultat.nom,
+
+          prenom:
+            resultat.prenom,
+
+          nomComplet:
+            resultat.nomComplet,
+
+          token:
+            resultat.token,
+
+          cours: []
+
+        };
+
+
+        eleves.push(
+          nouvelEleve
+        );
+
+
+        document
+          .getElementById(
+            "sectionNouvelEleve"
+          )
+          .classList.add("cache");
+
+
+        afficherQrNouvelEleve(
+          resultat
+        );
+
+
+        afficherSelection();
+
+
+        document
+          .getElementById(
+            "sectionSelection"
+          )
+          .classList.remove("cache");
+
+
+        afficherMessage(
+          "Nouvel élève enregistré avec succès.",
+          true
+        );
+
+
+        bouton.textContent =
+          "CRÉER L'ÉLÈVE";
+
+
+        bouton.disabled = false;
+
+      })
+
+      .catch(erreur => {
+
+        afficherMessage(
+          erreur.message ||
+          "Erreur lors de la création de l'élève.",
+          false
+        );
+
+
+        bouton.textContent =
+          "CRÉER L'ÉLÈVE";
+
+
+        bouton.disabled = false;
+
+      });
+
+  }
+
+
+  /*************************************************
+   * AFFICHAGE DU QR CODE DU NOUVEL ÉLÈVE
+   *************************************************/
+
+  function afficherQrNouvelEleve(eleve) {
+
+    const bloc =
+      document.getElementById(
+        "nouvelEleveResultat"
+      );
+
+
+    const urlQr =
+      "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+      encodeURIComponent(
+        eleve.token
+      );
+
+
+    bloc.innerHTML =
+
+      "<div class='qr-box'>" +
+
+      "<strong>Nouvel élève enregistré</strong>" +
+
+      "<div class='petit-texte'>" +
+      eleve.nomComplet +
+      "</div>" +
+
+      "<div class='petit-texte'>" +
+      "ID élève : " +
+      eleve.idEleve +
+      "</div>" +
+
+      "<div class='token'>" +
+      eleve.token +
+      "</div>" +
+
+      "<img src='" +
+      urlQr +
+      "' alt='QR Code'>" +
+
+      "<div class='petit-texte'>" +
+      "Ce QR code contient uniquement le QR Token." +
+      "</div>" +
+
+      "</div>";
+
+
+    bloc.classList.remove(
+      "cache"
+    );
+  }
+
+
+  /*************************************************
+   * AFFICHAGE DES ÉLÈVES
+   *************************************************/
+
+  function afficherSelection() {
+
+    const conteneur =
+      document.getElementById(
+        "listeEleves"
+      );
+
+
+    conteneur.innerHTML = "";
+
+
+    eleves.forEach(
+      function(eleve, index) {
+
+        const bloc =
+          document.createElement("div");
+
+
+        bloc.className =
+          "eleve-card";
+
+
+        const titre =
+          document.createElement("h3");
+
+
+        titre.textContent =
+          (index + 1) +
+          ". " +
+          eleve.nomComplet;
+
+
+        bloc.appendChild(
+          titre
+        );
+
+
+        const info =
+          document.createElement("div");
+
+
+        info.className =
+          "eleve-info";
+
+
+        info.textContent =
+          "ID : " +
+          eleve.idEleve;
+
+
+        bloc.appendChild(
+          info
+        );
+
+
+        const sousTitre =
+          document.createElement("div");
+
+
+        sousTitre.className =
+          "petit-texte";
+
+
+        sousTitre.textContent =
+          "Sélectionnez les cours consommés :";
+
+
+        bloc.appendChild(
+          sousTitre
+        );
+
+
+        const listeCours =
+          document.createElement("div");
+
+
+        listeCours.className =
+          "cours-liste";
+
+
+        coursDisponibles.forEach(
+          function(cours) {
+
+            const label =
+              document.createElement("label");
+
+
+            label.className =
+              "cours-option";
+
+
+            const checkbox =
+              document.createElement(
+                "input"
+              );
+
+
+            checkbox.type =
+              "checkbox";
+
+
+            checkbox.value =
+              cours.id;
+
+
+            checkbox.checked =
+              eleve.cours.includes(
+                cours.id
+              );
+
+
+            checkbox.addEventListener(
+              "change",
+              function() {
+
+                if (
+                  checkbox.checked
+                ) {
+
+                  if (
+                    !eleve.cours.includes(
+                      cours.id
+                    )
+                  ) {
+
+                    eleve.cours.push(
+                      cours.id
+                    );
+                  }
+
+                } else {
+
+                  eleve.cours =
+                    eleve.cours.filter(
+                      function(id) {
+                        return id !== cours.id;
+                      }
+                    );
+                }
+
+
+                mettreAJourTotal();
+              }
+            );
+
+
+            const texte =
+              document.createElement(
+                "span"
+              );
+
+
+            texte.innerHTML =
+              "<strong>" +
+              echapperHTML(
+                cours.nom
+              ) +
+              "</strong>" +
+              "<br>" +
+              "<span class='cours-horaire'>" +
+              echapperHTML(
+                cours.horaire
+              ) +
+              "</span>";
+
+
+            label.appendChild(
+              checkbox
+            );
+
+            label.appendChild(
+              texte
+            );
+
+            listeCours.appendChild(
+              label
+            );
+
+          }
+        );
+
+
+        bloc.appendChild(
+          listeCours
+        );
+
+
+        if (eleves.length > 1) {
+
+          const boutonSupprimer =
+            document.createElement(
+              "button"
+            );
+
+
+          boutonSupprimer.type =
+            "button";
+
+
+          boutonSupprimer.className =
+            "bouton-supprimer";
+
+
+          boutonSupprimer.textContent =
+            "Retirer cet élève";
+
+
+          boutonSupprimer.addEventListener(
+            "click",
+            function() {
+
+              eleves =
+                eleves.filter(
+                  function(e) {
+                    return e.idEleve !==
+                      eleve.idEleve;
+                  }
+                );
+
+
+              afficherSelection();
+              mettreAJourTotal();
+
+            }
+          );
+
+
+          bloc.appendChild(
+            boutonSupprimer
+          );
+        }
+
+
+        conteneur.appendChild(
+          bloc
+        );
+
+      }
+    );
+
+
+    document
+      .getElementById(
+        "boutonAjouterEleve"
+      )
+      .style.display =
+        eleves.length >= 2
+          ? "none"
+          : "block";
+
+
+    mettreAJourBouton();
+
+  }
+
+
+  /*************************************************
+   * AJOUT D'UN 2e ÉLÈVE
+   *************************************************/
+
+  function ajouterDeuxiemeEleve() {
+
+    if (eleves.length >= 2) {
+
+      afficherMessage(
+        "Deux élèves maximum.",
+        false
+      );
+
+      return;
+    }
+
+
+    document
+      .getElementById(
+        "sectionEleveConnu"
+      )
+      .classList.remove(
+        "cache"
+      );
+
+
+    document
+      .getElementById(
+        "token"
+      )
+      .focus();
+
+
+    afficherMessage(
+      "Scannez ou saisissez le QR Token du 2e élève.",
+      true
+    );
+
+  }
+
+
+  /*************************************************
+   * MODE DE PAIEMENT
+   *************************************************/
+
+  document
+    .querySelectorAll(
+      ".bouton-paiement"
+    )
+    .forEach(
+      function(bouton) {
+
+        bouton.addEventListener(
+          "click",
+          function() {
+
+            document
+              .querySelectorAll(
+                ".bouton-paiement"
+              )
+              .forEach(
+                function(b) {
+
+                  b.classList.remove(
+                    "selectionne"
+                  );
+
+                }
+              );
+
+
+            this.classList.add(
+              "selectionne"
+            );
+
+
+            modePaiement =
+              this.dataset.mode;
+
+
+            mettreAJourBouton();
+
+          }
+        );
+
+      }
+    );
+
+
+  /*************************************************
+   * TOKEN MANUEL
    *************************************************/
 
   document
@@ -560,77 +1483,200 @@
 
 
   /*************************************************
-   * CONTROLE DU BOUTON
+   * TARIF
    *************************************************/
-
-  document
-    .getElementById("cours")
-    .addEventListener(
-      "change",
-      mettreAJourBouton
-    );
 
   document
     .getElementById("tarif")
     .addEventListener(
       "input",
-      mettreAJourBouton
+      function() {
+
+        mettreAJourTotal();
+        mettreAJourBouton();
+
+      }
     );
 
 
-  function mettreAJourBouton() {
+  /*************************************************
+   * CALCUL DU TOTAL
+   *************************************************/
 
-    const cours =
-      document.getElementById("cours").value;
+  function obtenirNombreCours() {
+
+    let nombre = 0;
+
+
+    eleves.forEach(
+      function(eleve) {
+
+        nombre +=
+          eleve.cours.length;
+
+      }
+    );
+
+
+    return nombre;
+  }
+
+
+  function mettreAJourTotal() {
 
     const tarif =
-      document.getElementById("tarif").value;
+      Number(
+        String(
+          document.getElementById("tarif").value
+        )
+          .replace(",", ".")
+      );
+
+
+    const nombreCours =
+      obtenirNombreCours();
+
+
+    const total =
+      !isNaN(tarif)
+        ? tarif * nombreCours
+        : 0;
+
+
+    document
+      .getElementById("total")
+      .textContent =
+        total.toLocaleString(
+          "fr-BE",
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }
+        ) +
+        " €";
+
+
+    document
+      .getElementById("nombreCoursTotal")
+      .textContent =
+        nombreCours +
+        (
+          nombreCours === 1
+            ? " cours"
+            : " cours"
+        );
+
+
+    mettreAJourBouton();
+
+  }
+
+
+  /*************************************************
+   * CONTROLE DU BOUTON
+   *************************************************/
+
+  function mettreAJourBouton() {
+
+    const tarif =
+      document
+        .getElementById("tarif")
+        .value;
+
+
+    const nombreCours =
+      obtenirNombreCours();
+
 
     const bouton =
       document.getElementById(
         "boutonEnregistrer"
       );
 
+
     bouton.disabled = !(
-      eleve &&
-      cours &&
+      eleves.length >= 1 &&
+      eleves.length <= 2 &&
+      nombreCours > 0 &&
       modePaiement &&
-      tarif !== ""
+      tarif !== "" &&
+      Number(
+        String(tarif)
+          .replace(",", ".")
+      ) >= 0
     );
 
   }
 
 
   /*************************************************
-   * ENREGISTRER LA PRESENCE
+   * ENREGISTREMENT
    *************************************************/
 
   document
-    .getElementById("boutonEnregistrer")
+    .getElementById(
+      "boutonEnregistrer"
+    )
     .addEventListener(
       "click",
-      enregistrerPresence
+      enregistrerPointage
     );
 
 
-  function enregistrerPresence() {
+  function enregistrerPointage() {
 
-    if (!eleve) {
+    if (
+      eleves.length < 1 ||
+      eleves.length > 2
+    ) {
+
       return;
     }
 
-    const cours =
-      document.getElementById("cours").value;
 
     const tarif =
-      document.getElementById("tarif").value;
+      document
+        .getElementById("tarif")
+        .value;
+
 
     const bouton =
-      document.getElementById(
-        "boutonEnregistrer"
-      );
+      document
+        .getElementById(
+          "boutonEnregistrer"
+        );
+
+
+    const donnees = {
+
+      eleves:
+        eleves.map(
+          function(eleve) {
+
+            return {
+
+              token:
+                eleve.token,
+
+              cours:
+                eleve.cours.slice()
+
+            };
+
+          }
+        ),
+
+      modePaiement:
+        modePaiement,
+
+      tarif:
+        tarif
+
+    };
+
 
     bouton.disabled = true;
+
 
     afficherMessage(
       "Enregistrement en cours...",
@@ -638,102 +1684,200 @@
     );
 
 
-    const donnees = {
+    fetch(
+      API_URL,
+      {
+        method: "POST",
 
-      token: eleve.token,
+        body:
+          JSON.stringify(
+            donnees
+          )
+      }
+    )
 
-      idCours: cours,
+      .then(
+        response =>
+          response.json()
+      )
 
-      modePaiement: modePaiement,
+      .then(
+        resultat => {
 
-      tarif: tarif
+          if (!resultat.ok) {
 
-    };
+            throw new Error(
+              resultat.message
+            );
+          }
 
 
-    fetch(API_URL, {
+          const total =
+            Number(
+              resultat.total
+            );
 
-      method: "POST",
-
-      body: JSON.stringify(donnees)
-
-    })
-
-      .then(response => response.json())
-
-      .then(resultat => {
-
-        if (!resultat.ok) {
 
           afficherMessage(
-            resultat.message,
+
+            "Pointage enregistré : " +
+
+            resultat.nombreCours +
+
+            (
+              resultat.nombreCours === 1
+                ? " cours"
+                : " cours"
+            ) +
+
+            " — Total : " +
+
+            total.toLocaleString(
+              "fr-BE",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            ) +
+
+            " €",
+
+            true
+          );
+
+
+          reinitialiserApplication();
+
+        }
+      )
+
+      .catch(
+        erreur => {
+
+          afficherMessage(
+            erreur.message ||
+            "Erreur lors de l'enregistrement.",
             false
           );
 
+
           mettreAJourBouton();
 
-          return;
         }
+      );
+
+  }
 
 
-        afficherMessage(
-          "Présence enregistrée avec succès.",
-          true
-        );
+  /*************************************************
+   * RESET COMPLET
+   *************************************************/
+
+  function reinitialiserApplication() {
+
+    eleves = [];
+
+    modePaiement = "";
+
+    typeInitial = "";
 
 
-        /*******************************************
-         * RESET
-         *******************************************/
+    document
+      .getElementById("token")
+      .value = "";
 
-        document
-          .getElementById("token")
-          .value = "";
 
-        document
-          .getElementById("cours")
-          .value = "";
+    document
+      .getElementById("nouveauNom")
+      .value = "";
 
-        document
-          .getElementById("tarif")
-          .value = "";
 
-        document
-          .getElementById("eleve")
-          .style.display = "none";
+    document
+      .getElementById("nouveauPrenom")
+      .value = "";
 
-        document
-          .querySelectorAll(
-            ".bouton-paiement"
-          )
-          .forEach(b => {
 
-            b.classList.remove(
-              "selectionne"
-            );
+    document
+      .getElementById("tarif")
+      .value = "";
 
-          });
 
-        eleve = null;
+    document
+      .getElementById("listeEleves")
+      .innerHTML = "";
 
-        modePaiement = "";
 
-        mettreAJourBouton();
+    document
+      .getElementById("sectionChoix");
 
-      })
 
-      .catch(erreur => {
+    document
+      .getElementById(
+        "sectionEleveConnu"
+      )
+      .classList.add("cache");
 
-        afficherMessage(
-          "Erreur lors de l'enregistrement.",
-          false
-        );
 
-        console.error(erreur);
+    document
+      .getElementById(
+        "sectionNouvelEleve"
+      )
+      .classList.add("cache");
 
-        mettreAJourBouton();
 
-      });
+    document
+      .getElementById(
+        "sectionSelection"
+      )
+      .classList.add("cache");
+
+
+    document
+      .getElementById(
+        "nouvelEleveResultat"
+      )
+      .classList.add("cache");
+
+
+    document
+      .getElementById(
+        "etapeChoix"
+      )
+      .classList.remove("cache");
+
+
+    document
+      .querySelectorAll(
+        ".bouton-paiement"
+      )
+      .forEach(
+        function(b) {
+
+          b.classList.remove(
+            "selectionne"
+          );
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "total"
+      )
+      .textContent =
+        "0,00 €";
+
+
+    document
+      .getElementById(
+        "nombreCoursTotal"
+      )
+      .textContent =
+        "0 cours";
+
+
+    mettreAJourBouton();
 
   }
 
@@ -748,15 +1892,59 @@
   ) {
 
     const element =
-      document.getElementById("message");
+      document.getElementById(
+        "message"
+      );
 
-    element.textContent = texte;
+
+    element.textContent =
+      texte;
+
 
     element.className =
       "message " +
-      (succes ? "succes" : "erreur");
+      (
+        succes
+          ? "succes"
+          : "erreur"
+      );
 
-    element.style.display = "block";
+
+    element.style.display =
+      "block";
+
+  }
+
+
+  /*************************************************
+   * ÉCHAPPEMENT HTML
+   *************************************************/
+
+  function echapperHTML(texte) {
+
+    return String(
+      texte || ""
+    )
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
 
   }
 
