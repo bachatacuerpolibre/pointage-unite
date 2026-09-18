@@ -488,45 +488,40 @@
 
 
     <!-- Liste des élèves identifiés -->
-    <div id="listeEleves"></div>
+   <div id="listeEleves"></div>
+
+<button
+  id="boutonAjouterEleve"
+  class="bouton-second-eleve"
+  onclick="afficherChoixDeuxiemeEleve()"
+>
+  + Ajouter un 2e élève
+</button>
+
+<div id="sectionChoixDeuxieme" class="cache">
+
+  <h2>Ajouter un 2e élève</h2>
+
+  <div class="choix-ajout">
+
+    <button onclick="ajouterDeuxiemeEleveConnu()">
+      Élève déjà connu
+    </button>
+
+    <button onclick="ajouterDeuxiemeNouvelEleve()">
+      Nouvel élève
+    </button>
+
+  </div>
+
+</div>
 
 
     <!--
       IMPORTANT :
       Le choix du 2e élève se trouve maintenant
       APRÈS la liste des élèves.
-    -->
-    <div
-      id="sectionChoixDeuxieme"
-      class="section cache"
-    >
-
-      <hr class="separateur">
-
-      <h2>
-        Ajouter un 2e élève ?
-      </h2>
-
-      <div class="choix-ajout">
-
-        <button
-          type="button"
-          onclick="ajouterDeuxiemeEleveConnu()"
-        >
-          Élève déjà connu
-        </button>
-
-        <button
-          type="button"
-          onclick="ajouterDeuxiemeNouvelEleve()"
-        >
-          Nouvel élève
-        </button>
-
-      </div>
-
-    </div>
-
+   
 
     <!-- MODE DE PAIEMENT -->
 
