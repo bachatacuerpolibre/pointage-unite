@@ -225,6 +225,22 @@
       cursor: pointer;
     }
 
+    .bouton-second-eleve {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 9px;
+      background: white;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .bouton-second-eleve:hover {
+      background: #f0f0f0;
+    }
+
     .qr-box {
       margin-top: 20px;
       padding: 20px;
@@ -476,54 +492,67 @@
       Cours consommés
     </h2>
 
-    <!--
-      Le QR du nouvel élève est affiché ici.
-      Il reste donc visible même après fermeture
-      de la section "Nouvel élève".
-    -->
+
+    <!-- ==================================================
+         LISTE DES ÉLÈVES
+    ================================================== -->
+
+    <div id="listeEleves"></div>
+
+
+    <!-- ==================================================
+         BOUTON AJOUT 2e ÉLÈVE
+    ================================================== -->
+
+    <button
+      type="button"
+      id="boutonAjouterEleve"
+      class="bouton-second-eleve"
+      onclick="afficherChoixDeuxiemeEleve()"
+    >
+      + Ajouter un 2e élève
+    </button>
+
+
+    <!-- ==================================================
+         CHOIX DU 2e ÉLÈVE
+    ================================================== -->
+
     <div
-      id="nouvelEleveResultat"
+      id="sectionChoixDeuxieme"
       class="cache"
-    ></div>
+    >
+
+      <hr class="separateur">
+
+      <h2>
+        Ajouter un 2e élève
+      </h2>
+
+      <div class="choix-ajout">
+
+        <button
+          type="button"
+          onclick="ajouterDeuxiemeEleveConnu()"
+        >
+          Élève déjà connu
+        </button>
+
+        <button
+          type="button"
+          onclick="ajouterDeuxiemeNouvelEleve()"
+        >
+          Nouvel élève
+        </button>
+
+      </div>
+
+    </div>
 
 
-    <!-- Liste des élèves identifiés -->
-   <div id="listeEleves"></div>
-
-<button
-  id="boutonAjouterEleve"
-  class="bouton-second-eleve"
-  onclick="afficherChoixDeuxiemeEleve()"
->
-  + Ajouter un 2e élève
-</button>
-
-<div id="sectionChoixDeuxieme" class="cache">
-
-  <h2>Ajouter un 2e élève</h2>
-
-  <div class="choix-ajout">
-
-    <button onclick="ajouterDeuxiemeEleveConnu()">
-      Élève déjà connu
-    </button>
-
-    <button onclick="ajouterDeuxiemeNouvelEleve()">
-      Nouvel élève
-    </button>
-
-  </div>
-
-</div>
-
-
-    <!--
-      IMPORTANT :
-      Le choix du 2e élève se trouve maintenant
-      APRÈS la liste des élèves.
-   
-
-    <!-- MODE DE PAIEMENT -->
+    <!-- ==================================================
+         MODE DE PAIEMENT
+    ================================================== -->
 
     <label>
       Mode de paiement
@@ -550,7 +579,9 @@
     </div>
 
 
-    <!-- TARIF -->
+    <!-- ==================================================
+         TARIF
+    ================================================== -->
 
     <label for="tarif">
       Tarif unitaire
@@ -569,7 +600,9 @@
     </div>
 
 
-    <!-- TOTAL -->
+    <!-- ==================================================
+         TOTAL
+    ================================================== -->
 
     <div class="total-box">
 
@@ -594,7 +627,9 @@
     </div>
 
 
-    <!-- ENREGISTRER -->
+    <!-- ==================================================
+         ENREGISTRER
+    ================================================== -->
 
     <button
       id="boutonEnregistrer"
@@ -607,7 +642,9 @@
   </div>
 
 
-  <!-- MESSAGE -->
+  <!-- ==================================================
+       MESSAGE
+  ================================================== -->
 
   <div
     id="message"
@@ -846,6 +883,7 @@
       return;
     }
 
+
     const token =
       String(decodedText || "")
         .trim()
@@ -1013,7 +1051,7 @@
 
 
   /* ==================================================
-     AJOUT D'UN ÉLÈVE
+     AJOUT D'UN ÉLÈVE CONNU
   ================================================== */
 
   function ajouterEleveDansSelection(eleve) {
@@ -1065,7 +1103,9 @@
       token:
         eleve.token,
 
-      cours: []
+      cours: [],
+
+      nouvelEleve: false
 
     });
 
@@ -1089,24 +1129,6 @@
 
 
     afficherSelection();
-
-
-    /*
-     * Après le premier élève :
-     * le choix du deuxième apparaît juste
-     * sous sa carte.
-     */
-    if (eleves.length === 1) {
-
-      afficherChoixDeuxiemeEleve();
-
-    } else {
-
-      document
-        .getElementById("sectionChoixDeuxieme")
-        .classList.add("cache");
-
-    }
 
 
     mettreAJourTotal();
@@ -1215,7 +1237,9 @@
           token:
             resultat.token,
 
-          cours: []
+          cours: [],
+
+          nouvelEleve: true
 
         };
 
@@ -1225,9 +1249,6 @@
         );
 
 
-        /*
-         * On ferme le formulaire de création.
-         */
         document
           .getElementById(
             "sectionNouvelEleve"
@@ -1235,9 +1256,6 @@
           .classList.add("cache");
 
 
-        /*
-         * On affiche la zone de sélection.
-         */
         document
           .getElementById(
             "sectionSelection"
@@ -1246,37 +1264,10 @@
 
 
         /*
-         * On affiche le QR dans une zone
-         * indépendante du formulaire.
-         */
-        afficherQrNouvelEleve(
-          resultat
-        );
-
-
-        /*
-         * Affichage de l'élève.
+         * L'élève est affiché avec son QR
+         * directement dans sa carte.
          */
         afficherSelection();
-
-
-        /*
-         * Après le premier nouvel élève,
-         * proposer immédiatement le 2e.
-         */
-        if (eleves.length === 1) {
-
-          afficherChoixDeuxiemeEleve();
-
-        } else {
-
-          document
-            .getElementById(
-              "sectionChoixDeuxieme"
-            )
-            .classList.add("cache");
-
-        }
 
 
         bouton.textContent =
@@ -1315,19 +1306,10 @@
 
 
   /* ==================================================
-     AFFICHER QR DU NOUVEL ÉLÈVE
+     AFFICHER LE QR DU NOUVEL ÉLÈVE
   ================================================== */
 
-  function afficherQrNouvelEleve(eleve) {
-
-    const bloc =
-      document.getElementById(
-        "nouvelEleveResultat"
-      );
-
-
-    bloc.innerHTML = "";
-
+  function ajouterQrDansCarte(bloc, eleve) {
 
     const qrBox =
       document.createElement("div");
@@ -1345,9 +1327,6 @@
     qrBox.appendChild(titre);
 
 
-    /*
-     * UNIQUEMENT LE PRÉNOM
-     */
     const prenom =
       document.createElement("div");
 
@@ -1361,9 +1340,6 @@
     qrBox.appendChild(prenom);
 
 
-    /*
-     * TOKEN
-     */
     const token =
       document.createElement("div");
 
@@ -1376,11 +1352,6 @@
     qrBox.appendChild(token);
 
 
-    /*
-     * QR CODE
-     *
-     * Le QR contient uniquement le token.
-     */
     const image =
       document.createElement("img");
 
@@ -1394,19 +1365,21 @@
       );
 
 
+    /*
+     * Le QR contient uniquement le token.
+     */
     image.src =
       "https://quickchart.io/qr?text=" +
       tokenEncode +
       "&size=300";
 
 
-    /*
-     * Gestion d'erreur de chargement
-     */
     image.onerror =
       function() {
 
-        image.style.display = "none";
+        image.style.display =
+          "none";
+
 
         const erreur =
           document.createElement("div");
@@ -1443,8 +1416,6 @@
 
     bloc.appendChild(qrBox);
 
-    bloc.classList.remove("cache");
-
   }
 
 
@@ -1462,6 +1433,12 @@
         )
         .classList.add("cache");
 
+      document
+        .getElementById(
+          "boutonAjouterEleve"
+        )
+        .classList.add("cache");
+
       return;
     }
 
@@ -1471,6 +1448,27 @@
         "sectionChoixDeuxieme"
       )
       .classList.remove("cache");
+
+
+    document
+      .getElementById(
+        "boutonAjouterEleve"
+      )
+      .classList.add("cache");
+
+
+    /*
+     * On fait défiler jusqu'au choix,
+     * sans déplacer la section.
+     */
+    document
+      .getElementById(
+        "sectionChoixDeuxieme"
+      )
+      .scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
 
   }
 
@@ -1486,6 +1484,14 @@
     }
 
 
+    /*
+     * IMPORTANT :
+     * On NE cache PAS sectionSelection.
+     *
+     * Le premier élève reste donc visible
+     * pendant qu'on identifie le deuxième.
+     */
+
     document
       .getElementById(
         "sectionChoixDeuxieme"
@@ -1495,9 +1501,9 @@
 
     document
       .getElementById(
-        "sectionSelection"
+        "sectionEleveConnu"
       )
-      .classList.add("cache");
+      .classList.remove("cache");
 
 
     document
@@ -1505,13 +1511,6 @@
         "sectionNouvelEleve"
       )
       .classList.add("cache");
-
-
-    document
-      .getElementById(
-        "sectionEleveConnu"
-      )
-      .classList.remove("cache");
 
 
     document
@@ -1552,16 +1551,16 @@
     }
 
 
+    /*
+     * IMPORTANT :
+     * On NE cache PAS sectionSelection.
+     *
+     * Le premier élève reste visible.
+     */
+
     document
       .getElementById(
         "sectionChoixDeuxieme"
-      )
-      .classList.add("cache");
-
-
-    document
-      .getElementById(
-        "sectionSelection"
       )
       .classList.add("cache");
 
@@ -1668,6 +1667,21 @@
         bloc.appendChild(
           info
         );
+
+
+        /*
+         * Si c'est un nouvel élève,
+         * son QR apparaît directement
+         * dans sa propre carte.
+         */
+        if (eleve.nouvelEleve) {
+
+          ajouterQrDansCarte(
+            bloc,
+            eleve
+          );
+
+        }
 
 
         const sousTitre =
@@ -1803,6 +1817,7 @@
               checkbox
             );
 
+
             label.appendChild(
               texte
             );
@@ -1855,21 +1870,6 @@
               afficherSelection();
 
 
-              if (eleves.length === 1) {
-
-                afficherChoixDeuxiemeEleve();
-
-              } else {
-
-                document
-                  .getElementById(
-                    "sectionChoixDeuxieme"
-                  )
-                  .classList.add("cache");
-
-              }
-
-
               mettreAJourTotal();
 
             }
@@ -1892,17 +1892,46 @@
 
 
     /*
-     * Si deux élèves sont présents,
-     * le choix du 2e est caché.
+     * Avec 1 élève :
+     * le bouton "+ Ajouter un 2e élève"
+     * est visible.
+     *
+     * Avec 2 élèves :
+     * le bouton et le choix sont cachés.
      */
-    document
-      .getElementById(
-        "sectionChoixDeuxieme"
-      )
-      .classList.toggle(
-        "cache",
-        eleves.length !== 1
+    const boutonAjouter =
+      document.getElementById(
+        "boutonAjouterEleve"
       );
+
+
+    const choixDeuxieme =
+      document.getElementById(
+        "sectionChoixDeuxieme"
+      );
+
+
+    if (eleves.length === 1) {
+
+      boutonAjouter.classList.remove(
+        "cache"
+      );
+
+      choixDeuxieme.classList.add(
+        "cache"
+      );
+
+    } else {
+
+      boutonAjouter.classList.add(
+        "cache"
+      );
+
+      choixDeuxieme.classList.add(
+        "cache"
+      );
+
+    }
 
 
     mettreAJourTotal();
@@ -2344,23 +2373,16 @@
 
     document
       .getElementById(
+        "boutonAjouterEleve"
+      )
+      .classList.add("cache");
+
+
+    document
+      .getElementById(
         "sectionSelection"
       )
       .classList.add("cache");
-
-
-    document
-      .getElementById(
-        "nouvelEleveResultat"
-      )
-      .classList.add("cache");
-
-
-    document
-      .getElementById(
-        "nouvelEleveResultat"
-      )
-      .innerHTML = "";
 
 
     document
