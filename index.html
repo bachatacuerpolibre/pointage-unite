@@ -241,42 +241,6 @@
       background: #f0f0f0;
     }
 
-    .formulaire-deuxieme {
-      margin-top: 20px;
-      padding: 18px;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      background: #fafafa;
-    }
-
-    .formulaire-deuxieme h3 {
-      margin-top: 0;
-      margin-bottom: 15px;
-    }
-
-    .formulaire-deuxieme .petit-texte {
-      margin-top: 6px;
-    }
-
-    .formulaire-deuxieme #readerDeuxieme {
-      width: 100%;
-      margin-top: 15px;
-    }
-
-    .qr-box {
-      display: none;
-    }
-
-    .token {
-      display: none;
-    }
-
-    .petit-texte {
-      font-size: 13px;
-      color: #777;
-      margin-top: 6px;
-    }
-
     .message {
       margin-top: 20px;
       padding: 13px;
@@ -325,7 +289,8 @@
       background: #f0f0f0;
     }
 
-    #reader {
+    #reader,
+    #readerDeuxieme {
       width: 100%;
       margin-top: 15px;
     }
@@ -393,7 +358,7 @@
 
 
   <!-- ==================================================
-       ÉLÈVE CONNU - PREMIER ÉLÈVE UNIQUEMENT
+       PREMIER ÉLÈVE CONNU
   ================================================== -->
 
   <div
@@ -401,7 +366,7 @@
     class="section cache"
   >
 
-    <h2>
+    <h2 id="titreEleveConnu">
       Élève déjà connu
     </h2>
 
@@ -425,7 +390,7 @@
     <button
       type="button"
       class="enregistrer"
-      onclick="rechercherPremierEleve()"
+      onclick="rechercherEleve()"
     >
       🔎 Rechercher l'élève
     </button>
@@ -434,7 +399,7 @@
 
 
   <!-- ==================================================
-       NOUVEL ÉLÈVE
+       PREMIER NOUVEL ÉLÈVE
   ================================================== -->
 
   <div
@@ -442,7 +407,7 @@
     class="section cache"
   >
 
-    <h2 id="titreNouvelEleve">
+    <h2>
       Nouveau élève
     </h2>
 
@@ -496,11 +461,15 @@
     </h2>
 
 
+    <!-- ==================================================
+         LISTE DES ÉLÈVES
+    ================================================== -->
+
     <div id="listeEleves"></div>
 
 
     <!-- ==================================================
-         BOUTON AJOUT 2e ÉLÈVE
+         AJOUT 2e ÉLÈVE
     ================================================== -->
 
     <button
@@ -514,7 +483,7 @@
 
 
     <!-- ==================================================
-         CHOIX 2e ÉLÈVE
+         CHOIX DU 2e ÉLÈVE
     ================================================== -->
 
     <div
@@ -550,18 +519,21 @@
 
 
     <!-- ==================================================
-         FORMULAIRE QR DU 2e ÉLÈVE
-         IMPORTANT : placé dans sectionSelection
+         FORMULAIRE 2e ÉLÈVE CONNU
+         IMPORTANT :
+         Il est maintenant DANS sectionSelection.
     ================================================== -->
 
     <div
-      id="formulaireDeuxiemeConnu"
-      class="formulaire-deuxieme cache"
+      id="sectionDeuxiemeEleveConnu"
+      class="cache"
     >
 
-      <h3>
-        Identifier le 2e élève
-      </h3>
+      <hr class="separateur">
+
+      <h2>
+        Ajouter le 2e élève
+      </h2>
 
       <label for="tokenDeuxieme">
         QR Token
@@ -586,6 +558,55 @@
         onclick="rechercherDeuxiemeEleve()"
       >
         🔎 Rechercher le 2e élève
+      </button>
+
+    </div>
+
+
+    <!-- ==================================================
+         FORMULAIRE 2e NOUVEL ÉLÈVE
+    ================================================== -->
+
+    <div
+      id="sectionDeuxiemeNouvelEleve"
+      class="cache"
+    >
+
+      <hr class="separateur">
+
+      <h2>
+        Ajouter le 2e élève
+      </h2>
+
+      <label for="deuxiemePrenom">
+        Prénom
+      </label>
+
+      <input
+        type="text"
+        id="deuxiemePrenom"
+        placeholder="Prénom"
+        autocomplete="given-name"
+      >
+
+      <label for="deuxiemeNom">
+        Nom
+      </label>
+
+      <input
+        type="text"
+        id="deuxiemeNom"
+        placeholder="Nom"
+        autocomplete="family-name"
+      >
+
+      <button
+        type="button"
+        class="enregistrer"
+        id="boutonCreerDeuxiemeEleve"
+        onclick="creerDeuxiemeEleve()"
+      >
+        CRÉER LE 2e ÉLÈVE
       </button>
 
     </div>
@@ -715,17 +736,11 @@
 
   let modePaiement = "";
 
-  let scannerPremier = null;
+  let scanner = null;
 
-  let scannerDeuxieme = null;
+  let scannerActif = false;
 
-  let scannerPremierActif = false;
-
-  let scannerDeuxiemeActif = false;
-
-  let traitementScanPremier = false;
-
-  let traitementScanDeuxieme = false;
+  let traitementScan = false;
 
 
   /* ==================================================
@@ -734,28 +749,38 @@
 
   function chargerCours() {
 
-    fetch(API_URL + "?action=cours")
+    fetch(
+      API_URL + "?action=cours"
+    )
 
-      .then(response => response.json())
+      .then(
+        response =>
+          response.json()
+      )
 
-      .then(cours => {
+      .then(
+        cours => {
 
-        coursDisponibles = cours || [];
+          coursDisponibles =
+            cours || [];
 
-        afficherSelection();
+          afficherSelection();
 
-      })
+        }
+      )
 
-      .catch(erreur => {
+      .catch(
+        erreur => {
 
-        afficherMessage(
-          "Impossible de charger les cours.",
-          false
-        );
+          afficherMessage(
+            "Impossible de charger les cours.",
+            false
+          );
 
-        console.error(erreur);
+          console.error(erreur);
 
-      });
+        }
+      );
 
   }
 
@@ -770,27 +795,34 @@
       .getElementById("etapeChoix")
       .classList.add("cache");
 
+
     document
       .getElementById("sectionNouvelEleve")
       .classList.add("cache");
+
 
     document
       .getElementById("sectionSelection")
       .classList.add("cache");
 
+
     document
       .getElementById("sectionEleveConnu")
       .classList.remove("cache");
 
+
     document
-      .getElementById("token")
-      .value = "";
+      .getElementById("titreEleveConnu")
+      .textContent =
+        "Élève déjà connu";
+
 
     document
       .getElementById("token")
       .focus();
 
-    demarrerScannerPremier();
+
+    demarrerScannerPrincipal();
 
   }
 
@@ -805,30 +837,21 @@
       .getElementById("etapeChoix")
       .classList.add("cache");
 
+
     document
       .getElementById("sectionEleveConnu")
       .classList.add("cache");
+
 
     document
       .getElementById("sectionSelection")
       .classList.add("cache");
 
+
     document
       .getElementById("sectionNouvelEleve")
       .classList.remove("cache");
 
-    document
-      .getElementById("titreNouvelEleve")
-      .textContent =
-        "Nouveau élève";
-
-    document
-      .getElementById("nouveauPrenom")
-      .value = "";
-
-    document
-      .getElementById("nouveauNom")
-      .value = "";
 
     document
       .getElementById("nouveauPrenom")
@@ -841,10 +864,44 @@
      RECHERCHE PREMIER ÉLÈVE
   ================================================== */
 
-  function rechercherPremierEleve() {
+  function rechercherEleve() {
+
+    rechercherEleveAvecToken(
+      "token",
+      false
+    );
+
+  }
+
+
+  /* ==================================================
+     RECHERCHE 2e ÉLÈVE
+  ================================================== */
+
+  function rechercherDeuxiemeEleve() {
+
+    rechercherEleveAvecToken(
+      "tokenDeuxieme",
+      true
+    );
+
+  }
+
+
+  /* ==================================================
+     RECHERCHE GÉNÉRIQUE D'UN ÉLÈVE
+  ================================================== */
+
+  function rechercherEleveAvecToken(
+    idChamp,
+    deuxieme
+  ) {
 
     const champ =
-      document.getElementById("token");
+      document.getElementById(
+        idChamp
+      );
+
 
     const token =
       champ.value
@@ -863,7 +920,9 @@
     }
 
 
-    if (!/^[a-z]{3}$/.test(token)) {
+    if (
+      !/^[a-z]{3}$/.test(token)
+    ) {
 
       afficherMessage(
         "Le QR Token doit contenir exactement 3 lettres minuscules.",
@@ -873,68 +932,6 @@
       return;
     }
 
-
-    rechercherEleveParToken(
-      token,
-      false
-    );
-
-  }
-
-
-  /* ==================================================
-     RECHERCHE 2e ÉLÈVE
-  ================================================== */
-
-  function rechercherDeuxiemeEleve() {
-
-    const champ =
-      document.getElementById("tokenDeuxieme");
-
-    const token =
-      champ.value
-        .trim()
-        .toLowerCase();
-
-
-    if (!token) {
-
-      afficherMessage(
-        "Veuillez scanner ou saisir le QR Token du 2e élève.",
-        false
-      );
-
-      return;
-    }
-
-
-    if (!/^[a-z]{3}$/.test(token)) {
-
-      afficherMessage(
-        "Le QR Token doit contenir exactement 3 lettres minuscules.",
-        false
-      );
-
-      return;
-    }
-
-
-    rechercherEleveParToken(
-      token,
-      true
-    );
-
-  }
-
-
-  /* ==================================================
-     RECHERCHE COMMUNE PAR TOKEN
-  ================================================== */
-
-  function rechercherEleveParToken(
-    token,
-    deuxieme
-  ) {
 
     fetch(
       API_URL +
@@ -942,70 +939,77 @@
       encodeURIComponent(token)
     )
 
-      .then(response => response.json())
+      .then(
+        response =>
+          response.json()
+      )
 
-      .then(resultat => {
+      .then(
+        resultat => {
 
-        if (!resultat.ok) {
+          if (!resultat.ok) {
+
+            afficherMessage(
+              resultat.message,
+              false
+            );
+
+            return;
+          }
+
+
+          if (deuxieme) {
+
+            ajouterDeuxiemeDansSelection(
+              resultat
+            );
+
+          } else {
+
+            ajouterEleveDansSelection(
+              resultat
+            );
+
+          }
+
+
+          champ.value = "";
+
 
           afficherMessage(
-            resultat.message,
+            resultat.nomComplet +
+            " a été identifié.",
+            true
+          );
+
+        }
+      )
+
+      .catch(
+        erreur => {
+
+          afficherMessage(
+            "Erreur lors de la recherche de l'élève.",
             false
           );
 
-          return;
-        }
-
-
-        ajouterEleveDansSelection(
-          resultat
-        );
-
-
-        if (deuxieme) {
-
-          document
-            .getElementById("tokenDeuxieme")
-            .value = "";
-
-        } else {
-
-          document
-            .getElementById("token")
-            .value = "";
+          console.error(erreur);
 
         }
-
-
-        afficherMessage(
-          resultat.nomComplet +
-          " a été identifié.",
-          true
-        );
-
-      })
-
-      .catch(erreur => {
-
-        afficherMessage(
-          "Erreur lors de la recherche de l'élève.",
-          false
-        );
-
-        console.error(erreur);
-
-      });
+      );
 
   }
 
 
   /* ==================================================
-     SCAN PREMIER ÉLÈVE
+     SCAN QR PRINCIPAL
   ================================================== */
 
-  function onScanSuccessPremier(decodedText) {
+  function onScanSuccessPrincipal(
+    decodedText
+  ) {
 
-    if (traitementScanPremier) {
+    if (traitementScan) {
       return;
     }
 
@@ -1016,7 +1020,9 @@
         .toLowerCase();
 
 
-    if (!/^[a-z]{3}$/.test(token)) {
+    if (
+      !/^[a-z]{3}$/.test(token)
+    ) {
 
       afficherMessage(
         "QR code invalide : le token doit contenir 3 lettres.",
@@ -1027,7 +1033,7 @@
     }
 
 
-    traitementScanPremier = true;
+    traitementScan = true;
 
 
     document
@@ -1035,12 +1041,14 @@
       .value = token;
 
 
-    rechercherPremierEleve();
+    rechercherEleve();
 
 
     setTimeout(
       function() {
-        traitementScanPremier = false;
+
+        traitementScan = false;
+
       },
       2500
     );
@@ -1049,12 +1057,14 @@
 
 
   /* ==================================================
-     SCAN 2e ÉLÈVE
+     SCAN QR 2e ÉLÈVE
   ================================================== */
 
-  function onScanSuccessDeuxieme(decodedText) {
+  function onScanSuccessDeuxieme(
+    decodedText
+  ) {
 
-    if (traitementScanDeuxieme) {
+    if (traitementScan) {
       return;
     }
 
@@ -1065,7 +1075,9 @@
         .toLowerCase();
 
 
-    if (!/^[a-z]{3}$/.test(token)) {
+    if (
+      !/^[a-z]{3}$/.test(token)
+    ) {
 
       afficherMessage(
         "QR code invalide : le token doit contenir 3 lettres.",
@@ -1076,7 +1088,7 @@
     }
 
 
-    traitementScanDeuxieme = true;
+    traitementScan = true;
 
 
     document
@@ -1089,7 +1101,9 @@
 
     setTimeout(
       function() {
-        traitementScanDeuxieme = false;
+
+        traitementScan = false;
+
       },
       2500
     );
@@ -1098,16 +1112,18 @@
 
 
   /* ==================================================
-     DÉMARRER SCANNER PREMIER
+     DÉMARRER SCANNER PRINCIPAL
   ================================================== */
 
-  function demarrerScannerPremier() {
+  function demarrerScannerPrincipal() {
 
-    arreterScannerPremier();
+    arreterScanner();
 
 
     const lecteur =
-      document.getElementById("reader");
+      document.getElementById(
+        "reader"
+      );
 
 
     if (!lecteur) {
@@ -1118,34 +1134,36 @@
     lecteur.innerHTML = "";
 
 
-    scannerPremier =
+    scanner =
       new Html5Qrcode("reader");
 
 
-    scannerPremier.start(
+    scanner
+      .start(
 
-      {
-        facingMode: "environment"
-      },
+        {
+          facingMode:
+            "environment"
+        },
 
-      {
-        fps: 10,
+        {
+          fps: 10,
 
-        qrbox: {
-          width: 250,
-          height: 250
-        }
+          qrbox: {
+            width: 250,
+            height: 250
+          }
 
-      },
+        },
 
-      onScanSuccessPremier
+        onScanSuccessPrincipal
 
-    )
+      )
 
       .then(
         function() {
 
-          scannerPremierActif = true;
+          scannerActif = true;
 
         }
       )
@@ -1153,7 +1171,7 @@
       .catch(
         function(erreur) {
 
-          scannerPremierActif = false;
+          scannerActif = false;
 
           console.error(
             "Impossible d'activer la caméra :",
@@ -1173,12 +1191,12 @@
 
 
   /* ==================================================
-     DÉMARRER SCANNER 2e
+     DÉMARRER SCANNER 2e ÉLÈVE
   ================================================== */
 
   function demarrerScannerDeuxieme() {
 
-    arreterScannerDeuxieme();
+    arreterScanner();
 
 
     const lecteur =
@@ -1195,36 +1213,38 @@
     lecteur.innerHTML = "";
 
 
-    scannerDeuxieme =
+    scanner =
       new Html5Qrcode(
         "readerDeuxieme"
       );
 
 
-    scannerDeuxieme.start(
+    scanner
+      .start(
 
-      {
-        facingMode: "environment"
-      },
+        {
+          facingMode:
+            "environment"
+        },
 
-      {
-        fps: 10,
+        {
+          fps: 10,
 
-        qrbox: {
-          width: 250,
-          height: 250
-        }
+          qrbox: {
+            width: 250,
+            height: 250
+          }
 
-      },
+        },
 
-      onScanSuccessDeuxieme
+        onScanSuccessDeuxieme
 
-    )
+      )
 
       .then(
         function() {
 
-          scannerDeuxiemeActif = true;
+          scannerActif = true;
 
         }
       )
@@ -1232,7 +1252,7 @@
       .catch(
         function(erreur) {
 
-          scannerDeuxiemeActif = false;
+          scannerActif = false;
 
           console.error(
             "Impossible d'activer la caméra :",
@@ -1252,34 +1272,35 @@
 
 
   /* ==================================================
-     ARRÊTER SCANNER PREMIER
+     ARRÊTER SCANNER
   ================================================== */
 
-  function arreterScannerPremier() {
+  function arreterScanner() {
 
-    if (!scannerPremier) {
+    if (!scanner) {
       return;
     }
 
 
-    if (!scannerPremierActif) {
+    if (!scannerActif) {
 
-      scannerPremier = null;
+      scanner = null;
 
       return;
     }
 
 
-    scannerPremier.stop()
+    scanner
+      .stop()
 
       .then(
         function() {
 
-          scannerPremier.clear();
+          scanner.clear();
 
-          scannerPremier = null;
+          scanner = null;
 
-          scannerPremierActif = false;
+          scannerActif = false;
 
         }
       )
@@ -1292,60 +1313,9 @@
             erreur
           );
 
-          scannerPremierActif = false;
+          scannerActif = false;
 
-          scannerPremier = null;
-
-        }
-      );
-
-  }
-
-
-  /* ==================================================
-     ARRÊTER SCANNER 2e
-  ================================================== */
-
-  function arreterScannerDeuxieme() {
-
-    if (!scannerDeuxieme) {
-      return;
-    }
-
-
-    if (!scannerDeuxiemeActif) {
-
-      scannerDeuxieme = null;
-
-      return;
-    }
-
-
-    scannerDeuxieme.stop()
-
-      .then(
-        function() {
-
-          scannerDeuxieme.clear();
-
-          scannerDeuxieme = null;
-
-          scannerDeuxiemeActif = false;
-
-        }
-      )
-
-      .catch(
-        function(erreur) {
-
-          console.error(
-            "Erreur lors de l'arrêt du scanner :",
-            erreur
-          );
-
-          scannerDeuxiemeActif = false;
-
-          scannerDeuxieme = null;
+          scanner = null;
 
         }
       );
@@ -1354,25 +1324,16 @@
 
 
   /* ==================================================
-     ARRÊTER TOUS LES SCANNERS
+     AJOUT PREMIER ÉLÈVE
   ================================================== */
 
-  function arreterTousLesScanners() {
+  function ajouterEleveDansSelection(
+    eleve
+  ) {
 
-    arreterScannerPremier();
-
-    arreterScannerDeuxieme();
-
-  }
-
-
-  /* ==================================================
-     AJOUT D'UN ÉLÈVE DANS LA SÉLECTION
-  ================================================== */
-
-  function ajouterEleveDansSelection(eleve) {
-
-    if (eleves.length >= 2) {
+    if (
+      eleves.length >= 2
+    ) {
 
       afficherMessage(
         "Vous avez déjà sélectionné 2 élèves.",
@@ -1386,7 +1347,12 @@
     const dejaPresent =
       eleves.some(
         function(e) {
-          return e.idEleve === eleve.idEleve;
+
+          return (
+            e.idEleve ===
+            eleve.idEleve
+          );
+
         }
       );
 
@@ -1426,7 +1392,7 @@
     });
 
 
-    arreterTousLesScanners();
+    arreterScanner();
 
 
     document
@@ -1438,14 +1404,91 @@
 
     document
       .getElementById(
-        "formulaireDeuxiemeConnu"
+        "sectionSelection"
       )
-      .classList.add("cache");
+      .classList.remove("cache");
+
+
+    afficherSelection();
+
+  }
+
+
+  /* ==================================================
+     AJOUT 2e ÉLÈVE CONNU
+  ================================================== */
+
+  function ajouterDeuxiemeDansSelection(
+    eleve
+  ) {
+
+    if (
+      eleves.length >= 2
+    ) {
+
+      afficherMessage(
+        "Vous avez déjà sélectionné 2 élèves.",
+        false
+      );
+
+      return;
+    }
+
+
+    const dejaPresent =
+      eleves.some(
+        function(e) {
+
+          return (
+            e.idEleve ===
+            eleve.idEleve
+          );
+
+        }
+      );
+
+
+    if (dejaPresent) {
+
+      afficherMessage(
+        "Cet élève est déjà sélectionné.",
+        false
+      );
+
+      return;
+    }
+
+
+    eleves.push({
+
+      idEleve:
+        eleve.idEleve,
+
+      nom:
+        eleve.nom,
+
+      prenom:
+        eleve.prenom,
+
+      nomComplet:
+        eleve.nomComplet,
+
+      token:
+        eleve.token,
+
+      cours: [],
+
+      nouvelEleve: false
+
+    });
+
+
+    arreterScanner();
 
 
     document
       .getElementById(
-        "sectionNouvelEleve"
+        "sectionDeuxiemeEleveConnu"
       )
       .classList.add("cache");
 
@@ -1460,26 +1503,71 @@
     afficherSelection();
 
 
-    mettreAJourTotal();
+    document
+      .getElementById(
+        "sectionSelection"
+      )
+      .scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
 
   }
 
 
   /* ==================================================
-     CRÉATION D'UN NOUVEL ÉLÈVE
+     CRÉATION PREMIER NOUVEL ÉLÈVE
   ================================================== */
 
   function creerEleve() {
 
+    creerEleveServeur(
+      "nouveauPrenom",
+      "nouveauNom",
+      "boutonCreerEleve",
+      false
+    );
+
+  }
+
+
+  /* ==================================================
+     CRÉATION 2e NOUVEL ÉLÈVE
+  ================================================== */
+
+  function creerDeuxiemeEleve() {
+
+    creerEleveServeur(
+      "deuxiemePrenom",
+      "deuxiemeNom",
+      "boutonCreerDeuxiemeEleve",
+      true
+    );
+
+  }
+
+
+  /* ==================================================
+     CRÉATION NOUVEL ÉLÈVE GÉNÉRIQUE
+  ================================================== */
+
+  function creerEleveServeur(
+    idPrenom,
+    idNom,
+    idBouton,
+    deuxieme
+  ) {
+
     const prenom =
       document
-        .getElementById("nouveauPrenom")
+        .getElementById(idPrenom)
         .value
         .trim();
 
+
     const nom =
       document
-        .getElementById("nouveauNom")
+        .getElementById(idNom)
         .value
         .trim();
 
@@ -1495,7 +1583,9 @@
     }
 
 
-    if (eleves.length >= 2) {
+    if (
+      eleves.length >= 2
+    ) {
 
       afficherMessage(
         "Deux élèves maximum.",
@@ -1508,132 +1598,175 @@
 
     const bouton =
       document.getElementById(
-        "boutonCreerEleve"
+        idBouton
       );
 
 
     bouton.disabled = true;
 
+
     bouton.textContent =
       "CRÉATION EN COURS...";
 
 
-    fetch(API_URL, {
+    fetch(
+      API_URL,
+      {
 
-      method: "POST",
+        method: "POST",
 
-      body: JSON.stringify({
+        body:
+          JSON.stringify({
 
-        action: "creerEleve",
+            action:
+              "creerEleve",
 
-        nom:
-          nom,
+            nom:
+              nom,
 
-        prenom:
-          prenom
+            prenom:
+              prenom
 
-      })
+          })
 
-    })
+      }
+    )
 
-      .then(response => response.json())
+      .then(
+        response =>
+          response.json()
+      )
 
-      .then(resultat => {
+      .then(
+        resultat => {
 
-        if (!resultat.ok) {
+          if (!resultat.ok) {
 
-          throw new Error(
-            resultat.message
+            throw new Error(
+              resultat.message
+            );
+          }
+
+
+          const nouvelEleve = {
+
+            idEleve:
+              resultat.idEleve,
+
+            nom:
+              resultat.nom,
+
+            prenom:
+              resultat.prenom,
+
+            nomComplet:
+              resultat.nomComplet,
+
+            token:
+              resultat.token,
+
+            cours: [],
+
+            nouvelEleve: true
+
+          };
+
+
+          eleves.push(
+            nouvelEleve
           );
 
+
+          document
+            .getElementById(
+              idPrenom
+            )
+            .value = "";
+
+
+          document
+            .getElementById(
+              idNom
+            )
+            .value = "";
+
+
+          if (deuxieme) {
+
+            document
+              .getElementById(
+                "sectionDeuxiemeNouvelEleve"
+              )
+              .classList.add("cache");
+
+          } else {
+
+            document
+              .getElementById(
+                "sectionNouvelEleve"
+              )
+              .classList.add("cache");
+
+          }
+
+
+          document
+            .getElementById(
+              "sectionSelection"
+            )
+            .classList.remove("cache");
+
+
+          afficherSelection();
+
+
+          bouton.textContent =
+            deuxieme
+              ? "CRÉER LE 2e ÉLÈVE"
+              : "CRÉER L'ÉLÈVE";
+
+
+          bouton.disabled = false;
+
+
+          afficherMessage(
+            "Nouvel élève enregistré avec succès. Son QR code a été créé dans Eleves, colonne F.",
+            true
+          );
+
+
+          document
+            .getElementById(
+              "sectionSelection"
+            )
+            .scrollIntoView({
+              behavior: "smooth",
+              block: "start"
+            });
+
         }
+      )
+
+      .catch(
+        erreur => {
+
+          afficherMessage(
+            erreur.message ||
+            "Erreur lors de la création de l'élève.",
+            false
+          );
 
 
-        const nouvelEleve = {
-
-          idEleve:
-            resultat.idEleve,
-
-          nom:
-            resultat.nom,
-
-          prenom:
-            resultat.prenom,
-
-          nomComplet:
-            resultat.nomComplet,
-
-          token:
-            resultat.token,
-
-          cours: [],
-
-          nouvelEleve: true
-
-        };
+          bouton.textContent =
+            deuxieme
+              ? "CRÉER LE 2e ÉLÈVE"
+              : "CRÉER L'ÉLÈVE";
 
 
-        eleves.push(
-          nouvelEleve
-        );
+          bouton.disabled = false;
 
-
-        document
-          .getElementById(
-            "sectionNouvelEleve"
-          )
-          .classList.add("cache");
-
-
-        document
-          .getElementById(
-            "sectionSelection"
-          )
-          .classList.remove("cache");
-
-
-        /*
-         * Aucun QR code n'est affiché
-         * dans l'application.
-         *
-         * Le QR code est maintenant généré
-         * directement dans Google Sheets,
-         * colonne F de l'onglet Eleves.
-         */
-        afficherSelection();
-
-
-        bouton.textContent =
-          "CRÉER L'ÉLÈVE";
-
-        bouton.disabled = false;
-
-
-        afficherMessage(
-          "Nouvel élève enregistré avec succès.",
-          true
-        );
-
-
-        mettreAJourTotal();
-
-      })
-
-      .catch(erreur => {
-
-        afficherMessage(
-          erreur.message ||
-          "Erreur lors de la création de l'élève.",
-          false
-        );
-
-
-        bouton.textContent =
-          "CRÉER L'ÉLÈVE";
-
-        bouton.disabled = false;
-
-      });
+        }
+      );
 
   }
 
@@ -1644,7 +1777,9 @@
 
   function afficherChoixDeuxiemeEleve() {
 
-    if (eleves.length >= 2) {
+    if (
+      eleves.length >= 2
+    ) {
       return;
     }
 
@@ -1676,12 +1811,14 @@
 
 
   /* ==================================================
-     AJOUT 2e ÉLÈVE CONNU
+     CHOIX 2e ÉLÈVE CONNU
   ================================================== */
 
   function ajouterDeuxiemeEleveConnu() {
 
-    if (eleves.length >= 2) {
+    if (
+      eleves.length >= 2
+    ) {
       return;
     }
 
@@ -1695,7 +1832,14 @@
 
     document
       .getElementById(
-        "formulaireDeuxiemeConnu"
+        "sectionDeuxiemeNouvelEleve"
+      )
+      .classList.add("cache");
+
+
+    document
+      .getElementById(
+        "sectionDeuxiemeEleveConnu"
       )
       .classList.remove("cache");
 
@@ -1716,28 +1860,23 @@
 
     demarrerScannerDeuxieme();
 
-
-    document
-      .getElementById(
-        "formulaireDeuxiemeConnu"
-      )
-      .scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-
   }
 
 
   /* ==================================================
-     AJOUT 2e NOUVEL ÉLÈVE
+     CHOIX 2e NOUVEL ÉLÈVE
   ================================================== */
 
   function ajouterDeuxiemeNouvelEleve() {
 
-    if (eleves.length >= 2) {
+    if (
+      eleves.length >= 2
+    ) {
       return;
     }
+
+
+    arreterScanner();
 
 
     document
@@ -1749,55 +1888,37 @@
 
     document
       .getElementById(
-        "formulaireDeuxiemeConnu"
+        "sectionDeuxiemeEleveConnu"
       )
       .classList.add("cache");
 
 
     document
       .getElementById(
-        "sectionNouvelEleve"
+        "sectionDeuxiemeNouvelEleve"
       )
       .classList.remove("cache");
 
 
     document
       .getElementById(
-        "titreNouvelEleve"
-      )
-      .textContent =
-        "Ajouter le 2e élève";
-
-
-    document
-      .getElementById(
-        "nouveauPrenom"
+        "deuxiemePrenom"
       )
       .value = "";
 
 
     document
       .getElementById(
-        "nouveauNom"
+        "deuxiemeNom"
       )
       .value = "";
 
 
     document
       .getElementById(
-        "nouveauPrenom"
+        "deuxiemePrenom"
       )
       .focus();
-
-
-    document
-      .getElementById(
-        "sectionNouvelEleve"
-      )
-      .scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
 
   }
 
@@ -1919,7 +2040,9 @@
               "change",
               function() {
 
-                if (checkbox.checked) {
+                if (
+                  checkbox.checked
+                ) {
 
                   if (
                     !eleve.cours.includes(
@@ -1938,7 +2061,12 @@
                   eleve.cours =
                     eleve.cours.filter(
                       function(id) {
-                        return id !== cours.id;
+
+                        return (
+                          id !==
+                          cours.id
+                        );
+
                       }
                     );
 
@@ -2013,7 +2141,9 @@
         );
 
 
-        if (eleves.length > 1) {
+        if (
+          eleves.length > 1
+        ) {
 
           const boutonSupprimer =
             document.createElement("button");
@@ -2038,8 +2168,12 @@
               eleves =
                 eleves.filter(
                   function(e) {
-                    return e.idEleve !==
-                      eleve.idEleve;
+
+                    return (
+                      e.idEleve !==
+                      eleve.idEleve
+                    );
+
                   }
                 );
 
@@ -2080,25 +2214,24 @@
       );
 
 
-    if (eleves.length === 1) {
+    if (
+      eleves.length === 1
+    ) {
 
-      boutonAjouter.classList.remove(
-        "cache"
-      );
-
-      choixDeuxieme.classList.add(
-        "cache"
-      );
+      boutonAjouter
+        .classList
+        .remove("cache");
 
     } else {
 
-      boutonAjouter.classList.add(
-        "cache"
-      );
+      boutonAjouter
+        .classList
+        .add("cache");
 
-      choixDeuxieme.classList.add(
-        "cache"
-      );
+
+      choixDeuxieme
+        .classList
+        .add("cache");
 
     }
 
@@ -2164,7 +2297,7 @@
     .getElementById("token")
     .addEventListener(
       "change",
-      rechercherPremierEleve
+      rechercherEleve
     );
 
 
@@ -2174,11 +2307,13 @@
       "keydown",
       function(event) {
 
-        if (event.key === "Enter") {
+        if (
+          event.key === "Enter"
+        ) {
 
           event.preventDefault();
 
-          rechercherPremierEleve();
+          rechercherEleve();
 
         }
 
@@ -2191,7 +2326,9 @@
   ================================================== */
 
   document
-    .getElementById("tokenDeuxieme")
+    .getElementById(
+      "tokenDeuxieme"
+    )
     .addEventListener(
       "change",
       rechercherDeuxiemeEleve
@@ -2199,12 +2336,16 @@
 
 
   document
-    .getElementById("tokenDeuxieme")
+    .getElementById(
+      "tokenDeuxieme"
+    )
     .addEventListener(
       "keydown",
       function(event) {
 
-        if (event.key === "Enter") {
+        if (
+          event.key === "Enter"
+        ) {
 
           event.preventDefault();
 
@@ -2224,11 +2365,7 @@
     .getElementById("tarif")
     .addEventListener(
       "input",
-      function() {
-
-        mettreAJourTotal();
-
-      }
+      mettreAJourTotal
     );
 
 
@@ -2299,7 +2436,9 @@
 
 
     document
-      .getElementById("nombreCoursTotal")
+      .getElementById(
+        "nombreCoursTotal"
+      )
       .textContent =
         nombreCours +
         " cours";
@@ -2372,6 +2511,7 @@
       eleves.length < 1 ||
       eleves.length > 2
     ) {
+
       return;
     }
 
@@ -2466,9 +2606,7 @@
 
             resultat.nombreCours +
 
-            " cours" +
-
-            " — Total : " +
+            " cours — Total : " +
 
             total.toLocaleString(
               "fr-BE",
@@ -2485,7 +2623,8 @@
           );
 
 
-          arreterTousLesScanners();
+          arreterScanner();
+
 
           reinitialiserApplication();
 
@@ -2516,7 +2655,7 @@
 
   function reinitialiserApplication() {
 
-    arreterTousLesScanners();
+    arreterScanner();
 
 
     eleves = [];
@@ -2524,76 +2663,55 @@
     modePaiement = "";
 
 
-    document
-      .getElementById("token")
-      .value = "";
+    [
+      "token",
+      "tokenDeuxieme",
+      "nouveauNom",
+      "nouveauPrenom",
+      "deuxiemeNom",
+      "deuxiemePrenom",
+      "tarif"
+    ].forEach(
+      function(id) {
+
+        const element =
+          document.getElementById(id);
+
+
+        if (element) {
+
+          element.value = "";
+
+        }
+
+      }
+    );
 
 
     document
-      .getElementById("tokenDeuxieme")
-      .value = "";
-
-
-    document
-      .getElementById("nouveauNom")
-      .value = "";
-
-
-    document
-      .getElementById("nouveauPrenom")
-      .value = "";
-
-
-    document
-      .getElementById("tarif")
-      .value = "";
-
-
-    document
-      .getElementById("listeEleves")
+      .getElementById(
+        "listeEleves"
+      )
       .innerHTML = "";
 
 
-    document
-      .getElementById(
-        "sectionEleveConnu"
-      )
-      .classList.add("cache");
+    [
+      "sectionEleveConnu",
+      "sectionNouvelEleve",
+      "sectionChoixDeuxieme",
+      "sectionDeuxiemeEleveConnu",
+      "sectionDeuxiemeNouvelEleve",
+      "sectionSelection",
+      "boutonAjouterEleve"
+    ].forEach(
+      function(id) {
 
+        document
+          .getElementById(id)
+          .classList.add("cache");
 
-    document
-      .getElementById(
-        "sectionNouvelEleve"
-      )
-      .classList.add("cache");
-
-
-    document
-      .getElementById(
-        "sectionChoixDeuxieme"
-      )
-      .classList.add("cache");
-
-
-    document
-      .getElementById(
-        "formulaireDeuxiemeConnu"
-      )
-      .classList.add("cache");
-
-
-    document
-      .getElementById(
-        "boutonAjouterEleve"
-      )
-      .classList.add("cache");
-
-
-    document
-      .getElementById(
-        "sectionSelection"
-      )
-      .classList.add("cache");
+      }
+    );
 
 
     document
