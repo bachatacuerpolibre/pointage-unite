@@ -107,23 +107,6 @@
       margin-top: 25px;
     }
 
-    .eleve {
-      margin-top: 15px;
-      padding: 15px;
-      background: #f0f0f0;
-      border-radius: 10px;
-    }
-
-    .eleve strong {
-      font-size: 18px;
-    }
-
-    .eleve-info {
-      margin-top: 5px;
-      color: #666;
-      font-size: 14px;
-    }
-
     .eleve-card {
       margin-top: 20px;
       padding: 18px;
@@ -135,6 +118,12 @@
     .eleve-card h3 {
       margin-top: 0;
       margin-bottom: 5px;
+    }
+
+    .eleve-info {
+      margin-top: 5px;
+      color: #666;
+      font-size: 14px;
     }
 
     .cours-liste {
@@ -238,6 +227,10 @@
       font-size: 15px;
     }
 
+    .bouton-second-eleve:hover {
+      background: #f5f5f5;
+    }
+
     .bouton-supprimer {
       margin-top: 12px;
       padding: 8px 12px;
@@ -306,20 +299,38 @@
       display: none;
     }
 
-    .resume {
+    .choix-ajout {
+      display: flex;
+      gap: 10px;
       margin-top: 15px;
-      padding: 15px;
-      background: #f5f5f5;
-      border-radius: 10px;
     }
 
-    .resume-ligne {
-      padding: 4px 0;
+    .choix-ajout button {
+      flex: 1;
+      padding: 14px 8px;
+      border: 1px solid #ccc;
+      border-radius: 9px;
+      background: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .choix-ajout button:hover {
+      background: #f0f0f0;
+    }
+
+    #reader {
+      width: 100%;
+      margin-top: 15px;
     }
 
     @media (max-width: 500px) {
 
       .choix-initial {
+        flex-direction: column;
+      }
+
+      .choix-ajout {
         flex-direction: column;
       }
 
@@ -348,7 +359,7 @@
 
 
   <!-- ********************************************
-       ÉTAPE 1
+       CHOIX INITIAL
        ******************************************** -->
 
   <div id="etapeChoix">
@@ -379,7 +390,7 @@
 
 
   <!-- ********************************************
-       ÉTAPE ÉLÈVE CONNU
+       ÉLÈVE CONNU
        ******************************************** -->
 
   <div
@@ -387,7 +398,7 @@
     class="section cache"
   >
 
-    <h2>
+    <h2 id="titreEleveConnu">
       Élève déjà connu
     </h2>
 
@@ -403,7 +414,7 @@
     >
 
     <div class="petit-texte">
-      Vous pouvez scanner le QR code ou saisir le token manuellement.
+      Scannez le QR code ou saisissez les 3 lettres du token.
     </div>
 
     <div id="reader"></div>
@@ -411,9 +422,9 @@
     <button
       type="button"
       class="bouton-second-eleve"
-      onclick="ajouterDeuxiemeEleve()"
+      onclick="rechercherEleve()"
     >
-      + Ajouter un 2e élève
+      🔎 Rechercher l'élève
     </button>
 
   </div>
@@ -428,7 +439,7 @@
     class="section cache"
   >
 
-    <h2>
+    <h2 id="titreNouvelEleve">
       Nouveau élève
     </h2>
 
@@ -472,7 +483,43 @@
 
 
   <!-- ********************************************
-       ÉLÈVES SÉLECTIONNÉS
+       CHOIX POUR LE 2e ÉLÈVE
+       ******************************************** -->
+
+  <div
+    id="sectionChoixDeuxieme"
+    class="section cache"
+  >
+
+    <hr class="separateur">
+
+    <h2>
+      Ajouter un 2e élève
+    </h2>
+
+    <div class="choix-ajout">
+
+      <button
+        type="button"
+        onclick="ajouterDeuxiemeEleveConnu()"
+      >
+        Élève déjà connu
+      </button>
+
+      <button
+        type="button"
+        onclick="ajouterDeuxiemeNouvelEleve()"
+      >
+        Nouvel élève
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ********************************************
+       SÉLECTION DES COURS
        ******************************************** -->
 
   <div
@@ -492,7 +539,7 @@
       type="button"
       id="boutonAjouterEleve"
       class="bouton-second-eleve"
-      onclick="ajouterDeuxiemeEleve()"
+      onclick="afficherChoixDeuxiemeEleve()"
     >
       + Ajouter un 2e élève
     </button>
@@ -616,9 +663,9 @@
 
   let scanner = null;
 
-  let traitementScan = false;
+  let scannerActif = false;
 
-  let typeInitial = "";
+  let traitementScan = false;
 
 
   /*************************************************
@@ -634,6 +681,8 @@
       .then(cours => {
 
         coursDisponibles = cours || [];
+
+        afficherSelection();
 
       })
 
@@ -657,10 +706,16 @@
 
   function choisirEleveConnu() {
 
-    typeInitial = "connu";
-
     document
       .getElementById("etapeChoix")
+      .classList.add("cache");
+
+    document
+      .getElementById("sectionNouvelEleve")
+      .classList.add("cache");
+
+    document
+      .getElementById("sectionChoixDeuxieme")
       .classList.add("cache");
 
     document
@@ -668,8 +723,17 @@
       .classList.remove("cache");
 
     document
+      .getElementById("titreEleveConnu")
+      .textContent =
+        eleves.length === 0
+          ? "Élève déjà connu"
+          : "Ajouter un élève connu";
+
+    document
       .getElementById("token")
       .focus();
+
+    demarrerScanner();
 
   }
 
@@ -680,15 +744,24 @@
 
   function choisirNouvelEleve() {
 
-    typeInitial = "nouveau";
-
     document
       .getElementById("etapeChoix")
       .classList.add("cache");
 
     document
+      .getElementById("sectionEleveConnu")
+      .classList.add("cache");
+
+    document
       .getElementById("sectionNouvelEleve")
       .classList.remove("cache");
+
+    document
+      .getElementById("titreNouvelEleve")
+      .textContent =
+        eleves.length === 0
+          ? "Nouveau élève"
+          : "Ajouter un nouvel élève";
 
     document
       .getElementById("nouveauPrenom")
@@ -698,20 +771,38 @@
 
 
   /*************************************************
-   * RECHERCHE D'UN ÉLÈVE CONNU
+   * RECHERCHE D'UN ÉLÈVE
    *************************************************/
 
   function rechercherEleve() {
 
+    const champ =
+      document.getElementById("token");
+
     const token =
-      document
-        .getElementById("token")
-        .value
+      champ.value
         .trim()
         .toLowerCase();
 
 
     if (!token) {
+
+      afficherMessage(
+        "Veuillez scanner ou saisir un QR Token.",
+        false
+      );
+
+      return;
+    }
+
+
+    if (!/^[a-z]{3}$/.test(token)) {
+
+      afficherMessage(
+        "Le QR Token doit contenir exactement 3 lettres minuscules.",
+        false
+      );
+
       return;
     }
 
@@ -742,9 +833,7 @@
         );
 
 
-        document
-          .getElementById("token")
-          .value = "";
+        champ.value = "";
 
 
         afficherMessage(
@@ -770,7 +859,7 @@
 
 
   /*************************************************
-   * SCANNER QR
+   * SCAN QR
    *************************************************/
 
   function onScanSuccess(decodedText) {
@@ -779,13 +868,29 @@
       return;
     }
 
+    const token =
+      String(decodedText || "")
+        .trim()
+        .toLowerCase();
+
+
+    if (!/^[a-z]{3}$/.test(token)) {
+
+      afficherMessage(
+        "QR code invalide : le token doit contenir 3 lettres.",
+        false
+      );
+
+      return;
+    }
+
+
     traitementScan = true;
 
 
     document
       .getElementById("token")
-      .value =
-        decodedText.trim().toLowerCase();
+      .value = token;
 
 
     rechercherEleve();
@@ -802,10 +907,24 @@
 
 
   /*************************************************
-   * INITIALISATION DU SCANNER
+   * DÉMARRER LE SCANNER
    *************************************************/
 
-  function initialiserScanner() {
+  function demarrerScanner() {
+
+    if (scannerActif) {
+      return;
+    }
+
+
+    const lecteur =
+      document.getElementById("reader");
+
+
+    if (!lecteur) {
+      return;
+    }
+
 
     scanner =
       new Html5Qrcode("reader");
@@ -831,20 +950,79 @@
 
     )
 
-    .catch(erreur => {
+      .then(
+        function() {
 
-      console.error(
-        "Impossible d'activer la caméra :",
-        erreur
+          scannerActif = true;
+
+        }
+      )
+
+      .catch(
+        function(erreur) {
+
+          scannerActif = false;
+
+          console.error(
+            "Impossible d'activer la caméra :",
+            erreur
+          );
+
+
+          afficherMessage(
+            "Le scanner QR ne peut pas accéder à la caméra. Vérifiez l'autorisation de caméra.",
+            false
+          );
+
+        }
       );
-
-    });
 
   }
 
 
   /*************************************************
-   * AJOUT D'UN ÉLÈVE DANS LA SÉLECTION
+   * ARRÊTER LE SCANNER
+   *************************************************/
+
+  function arreterScanner() {
+
+    if (!scanner || !scannerActif) {
+      return;
+    }
+
+
+    scanner.stop()
+
+      .then(
+        function() {
+
+          scanner.clear();
+
+          scanner = null;
+
+          scannerActif = false;
+
+        }
+      )
+
+      .catch(
+        function(erreur) {
+
+          console.error(
+            "Erreur lors de l'arrêt du scanner :",
+            erreur
+          );
+
+          scannerActif = false;
+
+        }
+      );
+
+  }
+
+
+  /*************************************************
+   * AJOUT D'UN ÉLÈVE
    *************************************************/
 
   function ajouterEleveDansSelection(eleve) {
@@ -881,15 +1059,20 @@
 
     eleves.push({
 
-      idEleve: eleve.idEleve,
+      idEleve:
+        eleve.idEleve,
 
-      nomComplet: eleve.nomComplet,
+      nom:
+        eleve.nom,
 
-      nom: eleve.nom,
+      prenom:
+        eleve.prenom,
 
-      prenom: eleve.prenom,
+      nomComplet:
+        eleve.nomComplet,
 
-      token: eleve.token,
+      token:
+        eleve.token,
 
       cours: []
 
@@ -906,8 +1089,10 @@
 
     document
       .getElementById("sectionEleveConnu")
-      .classList.remove("cache");
+      .classList.add("cache");
 
+
+    arreterScanner();
 
     mettreAJourTotal();
 
@@ -944,9 +1129,21 @@
     }
 
 
+    if (eleves.length >= 2) {
+
+      afficherMessage(
+        "Deux élèves maximum.",
+        false
+      );
+
+      return;
+    }
+
+
     const bouton =
-      document
-        .getElementById("boutonCreerEleve");
+      document.getElementById(
+        "boutonCreerEleve"
+      );
 
 
     bouton.disabled = true;
@@ -963,9 +1160,11 @@
 
         action: "creerEleve",
 
-        nom: nom,
+        nom:
+          nom,
 
-        prenom: prenom
+        prenom:
+          prenom
 
       })
 
@@ -1032,17 +1231,19 @@
           .classList.remove("cache");
 
 
+        bouton.textContent =
+          "CRÉER L'ÉLÈVE";
+
+        bouton.disabled = false;
+
+
         afficherMessage(
           "Nouvel élève enregistré avec succès.",
           true
         );
 
 
-        bouton.textContent =
-          "CRÉER L'ÉLÈVE";
-
-
-        bouton.disabled = false;
+        mettreAJourTotal();
 
       })
 
@@ -1058,7 +1259,6 @@
         bouton.textContent =
           "CRÉER L'ÉLÈVE";
 
-
         bouton.disabled = false;
 
       });
@@ -1067,7 +1267,7 @@
 
 
   /*************************************************
-   * AFFICHAGE DU QR CODE DU NOUVEL ÉLÈVE
+   * AFFICHER QR DU NOUVEL ÉLÈVE
    *************************************************/
 
   function afficherQrNouvelEleve(eleve) {
@@ -1078,46 +1278,238 @@
       );
 
 
-    const urlQr =
+    bloc.innerHTML = "";
+
+
+    const qrBox =
+      document.createElement("div");
+
+    qrBox.className =
+      "qr-box";
+
+
+    const titre =
+      document.createElement("strong");
+
+    titre.textContent =
+      "Nouvel élève enregistré";
+
+    qrBox.appendChild(titre);
+
+
+    const nom =
+      document.createElement("div");
+
+    nom.className =
+      "petit-texte";
+
+    nom.textContent =
+      eleve.nomComplet;
+
+    qrBox.appendChild(nom);
+
+
+    const id =
+      document.createElement("div");
+
+    id.className =
+      "petit-texte";
+
+    id.textContent =
+      "ID élève : " +
+      eleve.idEleve;
+
+    qrBox.appendChild(id);
+
+
+    const token =
+      document.createElement("div");
+
+    token.className =
+      "token";
+
+    token.textContent =
+      eleve.token;
+
+    qrBox.appendChild(token);
+
+
+    const image =
+      document.createElement("img");
+
+    image.alt =
+      "QR Code";
+
+    image.src =
       "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
       encodeURIComponent(
         eleve.token
       );
 
 
-    bloc.innerHTML =
-
-      "<div class='qr-box'>" +
-
-      "<strong>Nouvel élève enregistré</strong>" +
-
-      "<div class='petit-texte'>" +
-      eleve.nomComplet +
-      "</div>" +
-
-      "<div class='petit-texte'>" +
-      "ID élève : " +
-      eleve.idEleve +
-      "</div>" +
-
-      "<div class='token'>" +
-      eleve.token +
-      "</div>" +
-
-      "<img src='" +
-      urlQr +
-      "' alt='QR Code'>" +
-
-      "<div class='petit-texte'>" +
-      "Ce QR code contient uniquement le QR Token." +
-      "</div>" +
-
-      "</div>";
+    qrBox.appendChild(image);
 
 
-    bloc.classList.remove(
-      "cache"
-    );
+    const texte =
+      document.createElement("div");
+
+    texte.className =
+      "petit-texte";
+
+    texte.textContent =
+      "Ce QR code contient uniquement le QR Token.";
+
+    qrBox.appendChild(texte);
+
+
+    bloc.appendChild(qrBox);
+
+    bloc.classList.remove("cache");
+
+  }
+
+
+  /*************************************************
+   * AFFICHER LE CHOIX POUR LE 2e ÉLÈVE
+   *************************************************/
+
+  function afficherChoixDeuxiemeEleve() {
+
+    if (eleves.length >= 2) {
+
+      afficherMessage(
+        "Deux élèves maximum.",
+        false
+      );
+
+      return;
+    }
+
+
+    document
+      .getElementById(
+        "sectionChoixDeuxieme"
+      )
+      .classList.remove("cache");
+
+
+    document
+      .getElementById(
+        "sectionChoixDeuxieme"
+      )
+      .scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+  }
+
+
+  /*************************************************
+   * AJOUT 2e ÉLÈVE CONNU
+   *************************************************/
+
+  function ajouterDeuxiemeEleveConnu() {
+
+    if (eleves.length >= 2) {
+      return;
+    }
+
+
+    document
+      .getElementById(
+        "sectionChoixDeuxieme"
+      )
+      .classList.add("cache");
+
+
+    document
+      .getElementById(
+        "sectionEleveConnu"
+      )
+      .classList.remove("cache");
+
+
+    document
+      .getElementById(
+        "titreEleveConnu"
+      )
+      .textContent =
+        "Ajouter le 2e élève";
+
+
+    document
+      .getElementById(
+        "token"
+      )
+      .value = "";
+
+
+    document
+      .getElementById(
+        "token"
+      )
+      .focus();
+
+
+    demarrerScanner();
+
+  }
+
+
+  /*************************************************
+   * AJOUT 2e NOUVEL ÉLÈVE
+   *************************************************/
+
+  function ajouterDeuxiemeNouvelEleve() {
+
+    if (eleves.length >= 2) {
+      return;
+    }
+
+
+    document
+      .getElementById(
+        "sectionChoixDeuxieme"
+      )
+      .classList.add("cache");
+
+
+    document
+      .getElementById(
+        "sectionNouvelEleve"
+      )
+      .classList.remove("cache");
+
+
+    document
+      .getElementById(
+        "titreNouvelEleve"
+      )
+      .textContent =
+        "Ajouter le 2e élève";
+
+
+    document
+      .getElementById(
+        "nouveauPrenom"
+      )
+      .value = "";
+
+
+    document
+      .getElementById(
+        "nouveauNom"
+      )
+      .value = "";
+
+
+    document
+      .getElementById(
+        "nouveauPrenom"
+      )
+      .focus();
+
   }
 
 
@@ -1217,9 +1609,7 @@
 
 
             const checkbox =
-              document.createElement(
-                "input"
-              );
+              document.createElement("input");
 
 
             checkbox.type =
@@ -1240,9 +1630,7 @@
               "change",
               function() {
 
-                if (
-                  checkbox.checked
-                ) {
+                if (checkbox.checked) {
 
                   if (
                     !eleve.cours.includes(
@@ -1253,6 +1641,7 @@
                     eleve.cours.push(
                       cours.id
                     );
+
                   }
 
                 } else {
@@ -1263,32 +1652,53 @@
                         return id !== cours.id;
                       }
                     );
+
                 }
 
 
                 mettreAJourTotal();
+
               }
             );
 
 
             const texte =
-              document.createElement(
-                "span"
-              );
+              document.createElement("span");
 
 
-            texte.innerHTML =
-              "<strong>" +
-              echapperHTML(
-                cours.nom
-              ) +
-              "</strong>" +
-              "<br>" +
-              "<span class='cours-horaire'>" +
-              echapperHTML(
-                cours.horaire
-              ) +
-              "</span>";
+            const nomCours =
+              document.createElement("strong");
+
+
+            nomCours.textContent =
+              cours.nom;
+
+
+            texte.appendChild(
+              nomCours
+            );
+
+
+            texte.appendChild(
+              document.createElement("br")
+            );
+
+
+            const horaire =
+              document.createElement("span");
+
+
+            horaire.className =
+              "cours-horaire";
+
+
+            horaire.textContent =
+              cours.horaire;
+
+
+            texte.appendChild(
+              horaire
+            );
 
 
             label.appendChild(
@@ -1298,6 +1708,7 @@
             label.appendChild(
               texte
             );
+
 
             listeCours.appendChild(
               label
@@ -1315,9 +1726,7 @@
         if (eleves.length > 1) {
 
           const boutonSupprimer =
-            document.createElement(
-              "button"
-            );
+            document.createElement("button");
 
 
           boutonSupprimer.type =
@@ -1355,6 +1764,7 @@
           bloc.appendChild(
             boutonSupprimer
           );
+
         }
 
 
@@ -1376,48 +1786,7 @@
           : "block";
 
 
-    mettreAJourBouton();
-
-  }
-
-
-  /*************************************************
-   * AJOUT D'UN 2e ÉLÈVE
-   *************************************************/
-
-  function ajouterDeuxiemeEleve() {
-
-    if (eleves.length >= 2) {
-
-      afficherMessage(
-        "Deux élèves maximum.",
-        false
-      );
-
-      return;
-    }
-
-
-    document
-      .getElementById(
-        "sectionEleveConnu"
-      )
-      .classList.remove(
-        "cache"
-      );
-
-
-    document
-      .getElementById(
-        "token"
-      )
-      .focus();
-
-
-    afficherMessage(
-      "Scannez ou saisissez le QR Token du 2e élève.",
-      true
-    );
+    mettreAJourTotal();
 
   }
 
@@ -1482,6 +1851,24 @@
     );
 
 
+  document
+    .getElementById("token")
+    .addEventListener(
+      "keydown",
+      function(event) {
+
+        if (event.key === "Enter") {
+
+          event.preventDefault();
+
+          rechercherEleve();
+
+        }
+
+      }
+    );
+
+
   /*************************************************
    * TARIF
    *************************************************/
@@ -1493,14 +1880,13 @@
       function() {
 
         mettreAJourTotal();
-        mettreAJourBouton();
 
       }
     );
 
 
   /*************************************************
-   * CALCUL DU TOTAL
+   * NOMBRE DE COURS
    *************************************************/
 
   function obtenirNombreCours() {
@@ -1519,16 +1905,25 @@
 
 
     return nombre;
+
   }
 
 
+  /*************************************************
+   * TOTAL
+   *************************************************/
+
   function mettreAJourTotal() {
+
+    const valeurTarif =
+      document
+        .getElementById("tarif")
+        .value;
+
 
     const tarif =
       Number(
-        String(
-          document.getElementById("tarif").value
-        )
+        String(valeurTarif)
           .replace(",", ".")
       );
 
@@ -1538,7 +1933,7 @@
 
 
     const total =
-      !isNaN(tarif)
+      Number.isFinite(tarif)
         ? tarif * nombreCours
         : 0;
 
@@ -1560,11 +1955,7 @@
       .getElementById("nombreCoursTotal")
       .textContent =
         nombreCours +
-        (
-          nombreCours === 1
-            ? " cours"
-            : " cours"
-        );
+        " cours";
 
 
     mettreAJourBouton();
@@ -1573,15 +1964,22 @@
 
 
   /*************************************************
-   * CONTROLE DU BOUTON
+   * BOUTON ENREGISTRER
    *************************************************/
 
   function mettreAJourBouton() {
 
-    const tarif =
+    const valeurTarif =
       document
         .getElementById("tarif")
         .value;
+
+
+    const tarif =
+      Number(
+        String(valeurTarif)
+          .replace(",", ".")
+      );
 
 
     const nombreCours =
@@ -1598,12 +1996,10 @@
       eleves.length >= 1 &&
       eleves.length <= 2 &&
       nombreCours > 0 &&
-      modePaiement &&
-      tarif !== "" &&
-      Number(
-        String(tarif)
-          .replace(",", ".")
-      ) >= 0
+      modePaiement !== "" &&
+      valeurTarif !== "" &&
+      Number.isFinite(tarif) &&
+      tarif >= 0
     );
 
   }
@@ -1629,7 +2025,6 @@
       eleves.length < 1 ||
       eleves.length > 2
     ) {
-
       return;
     }
 
@@ -1641,10 +2036,9 @@
 
 
     const bouton =
-      document
-        .getElementById(
-          "boutonEnregistrer"
-        );
+      document.getElementById(
+        "boutonEnregistrer"
+      );
 
 
     const donnees = {
@@ -1709,6 +2103,7 @@
             throw new Error(
               resultat.message
             );
+
           }
 
 
@@ -1724,11 +2119,7 @@
 
             resultat.nombreCours +
 
-            (
-              resultat.nombreCours === 1
-                ? " cours"
-                : " cours"
-            ) +
+            " cours" +
 
             " — Total : " +
 
@@ -1743,8 +2134,11 @@
             " €",
 
             true
+
           );
 
+
+          arreterScanner();
 
           reinitialiserApplication();
 
@@ -1770,16 +2164,17 @@
 
 
   /*************************************************
-   * RESET COMPLET
+   * RESET
    *************************************************/
 
   function reinitialiserApplication() {
 
+    arreterScanner();
+
+
     eleves = [];
 
     modePaiement = "";
-
-    typeInitial = "";
 
 
     document
@@ -1808,10 +2203,6 @@
 
 
     document
-      .getElementById("sectionChoix");
-
-
-    document
       .getElementById(
         "sectionEleveConnu"
       )
@@ -1821,6 +2212,13 @@
     document
       .getElementById(
         "sectionNouvelEleve"
+      )
+      .classList.add("cache");
+
+
+    document
+      .getElementById(
+        "sectionChoixDeuxieme"
       )
       .classList.add("cache");
 
@@ -1877,6 +2275,14 @@
         "0 cours";
 
 
+    document
+      .getElementById(
+        "boutonAjouterEleve"
+      )
+      .style.display =
+        "block";
+
+
     mettreAJourBouton();
 
   }
@@ -1917,45 +2323,10 @@
 
 
   /*************************************************
-   * ÉCHAPPEMENT HTML
-   *************************************************/
-
-  function echapperHTML(texte) {
-
-    return String(
-      texte || ""
-    )
-      .replace(
-        /&/g,
-        "&amp;"
-      )
-      .replace(
-        /</g,
-        "&lt;"
-      )
-      .replace(
-        />/g,
-        "&gt;"
-      )
-      .replace(
-        /"/g,
-        "&quot;"
-      )
-      .replace(
-        /'/g,
-        "&#039;"
-      );
-
-  }
-
-
-  /*************************************************
    * INITIALISATION
    *************************************************/
 
   chargerCours();
-
-  initialiserScanner();
 
 </script>
 
